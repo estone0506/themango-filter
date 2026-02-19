@@ -154,17 +154,24 @@
         observer.observe(targetNode, config);
     }
 
-    // 삭제 완료 후 이동했을 때만 첫 번째 항목 자동 체크
+    // 삭제 완료 후 이동했을 때만 첫 번째 항목 자동 체크 및 수집 시작
     function autoCheckFirstFilter() {
         const url = window.location.href;
         if (url.includes('getGoodsCategory.php') && url.includes('sch_keyword=') && url.includes('is_after_del=Y')) {
-            console.log("🔎 [더망고 V2] 삭제 완료 후 자동 체크 시도 중...");
+            console.log("🔎 [더망고 V2] 삭제 완료 후 자동 체크 및 수집 시작 시도 중...");
             
             setTimeout(() => {
                 const firstCheckbox = document.querySelector('#search_category tbody tr input[name="chk_value"]');
                 if (firstCheckbox) {
                     firstCheckbox.checked = true;
                     console.log("✅ [더망고 V2] 첫 번째 필터를 자동으로 선택했습니다.");
+
+                    // [V4.9 추가] 수집 시작 버튼 자동 클릭
+                    const startBtn = document.getElementById('start_button');
+                    if (startBtn) {
+                        console.log("🚀 [더망고 V2] 신규상품수집 버튼을 자동으로 클릭합니다.");
+                        startBtn.click();
+                    }
                 }
             }, 800); 
         }
