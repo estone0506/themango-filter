@@ -42,6 +42,7 @@ function scrapeFiltersFromDOM() {
 }
 
 function updatePageCheckboxes(marketStates) {
+    // 제공된 소스 코드의 실제 ID 매핑
     const checkboxMap = {
         'coupang': 'chk_coupang_yn',
         'gmarket': 'chk_gmarket20_yn',
@@ -57,9 +58,11 @@ function updatePageCheckboxes(marketStates) {
             const checkbox = document.getElementById(checkboxId);
             if (checkbox) {
                 checkbox.checked = isChecked;
+                // 제공된 소스의 span ID는 _yn을 제외한 형태 (chk_auction20 등)
                 const spanId = checkboxId.replace('_yn', '');
                 const span = document.getElementById(spanId);
                 if (span) {
+                    // 소스 상의 스타일 클래스 적용
                     span.className = isChecked ? 'label label-primary market btn_style1' : 'label label-default market btn_style1';
                 }
             }
@@ -72,45 +75,44 @@ function executeMarketDeleteOnPage(deleteType) {
     const script = document.createElement('script');
     script.textContent = `
         (function() {
-            // 1. 브라우저 확인창(confirm, alert) 자동 '확인' 처리
+            // 1. 브라우저 확인창 자동 승인
             window.confirm = function() { return true; };
-            window.alert = function(msg) { console.log('더망고 알림: ' + msg); return true; };
+            window.alert = function(msg) { console.log('더망고 알림 차단: ' + msg); return true; };
             
-            console.log('더망고 확장앱: 페이지 내 삭제 로직 실행 시작 - 유형: ${deleteType}');
+            console.log('더망고 확장앱: 페이지 내 삭제 함수 직접 실행 - 유형: ${deleteType}');
 
             const isAll = '${deleteType}' === 'all';
             
-            // 2. 버튼 찾기 (텍스트 및 onclick 속성 기반)
-            const allElements = Array.from(document.querySelectorAll('a, button'));
-            let targetBtn = null;
-
-            if (isAll) {
-                // "마켓삭제시작(검색결과모든상품)" 버튼
-                targetBtn = allElements.find(el => 
-                    (el.innerText.includes('마켓삭제시작') && el.innerText.includes('모든상품')) ||
-                    (el.getAttribute('onclick') && el.getAttribute('onclick').includes("goods_permanent_delete('all'"))
-                );
-            } else {
-                // "마켓 삭제 시작" (선택 상품) 버튼
-                targetBtn = allElements.find(el => 
-                    (el.innerText.includes('마켓 삭제 시작') && !el.innerText.includes('모든상품')) ||
-                    (el.getAttribute('onclick') && el.getAttribute('onclick').includes("goods_permanent_delete('')")) ||
-                    (el.getAttribute('onclick') && el.getAttribute('onclick').includes("goods_permanent_delete()") && !el.getAttribute('onclick').includes("'all'"))
-                );
-            }
-
-            if (targetBtn) {
-                console.log('더망고 확장앱: 타겟 버튼 발견, 클릭 실행', targetBtn);
-                targetBtn.click();
-            } else if (typeof goods_permanent_delete === 'function') {
-                console.log('더망고 확장앱: 버튼을 못 찾아 전역 함수 직접 호출');
+            if (typeof goods_permanent_delete === 'function') {
                 if (isAll) {
+                    // 검색결과 모든 상품 삭제 실행 (페이지 소스의 버튼 로직과 동일)
+                    console.log('더망고 확장앱: goods_permanent_delete("all") 호출');
                     goods_permanent_delete('all', '', '', '');
                 } else {
+                    // 선택 상품 삭제 실행
+                    console.log('더망고 확장앱: goods_permanent_delete("") 호출');
                     goods_permanent_delete('', '', '', '');
                 }
             } else {
-                console.error('더망고 확장앱: 삭제 버튼이나 실행 함수를 찾을 수 없습니다.');
+                // 함수를 찾을 수 없을 경우 버튼 클릭 시도
+                const deleteButtons = Array.from(document.querySelectorAll('a, button'));
+                const targetBtn = deleteButtons.find(el => {
+                    const onclick = el.getAttribute('onclick') || '';
+                    if (isAll) {
+                        return (el.innerText.includes('마켓삭제시작') && el.innerText.includes('모든상품')) || 
+                               onclick.includes("goods_permanent_delete('all'");
+                    } else {
+                        return el.innerText.includes('마켓 삭제 시작') || 
+                               (onclick.includes('goods_permanent_delete(') && !onclick.includes("'all'"));
+                    }
+                });
+
+                if (targetBtn) {
+                    console.log('더망고 확장앱: 삭제 버튼 발견, 클릭 실행');
+                    targetBtn.click();
+                } else {
+                    console.error('더망고 확장앱: 삭제 실행 수단을 찾을 수 없습니다.');
+                }
             }
         })();
     `;
