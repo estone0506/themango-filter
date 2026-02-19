@@ -30,10 +30,11 @@
 
     // 2. 삭제 실행 로직
     function executeDelete(mode) {
-        // (1) 브라우저 확인창(confirm)만 자동 승인 처리 (시작 시 번거로움 제거)
-        // 완료 알림(alert)은 사용자가 직접 볼 수 있도록 오버라이드 하지 않음
+        // (1) 브라우저 확인창(confirm) 일시적 자동 승인
+        // 삭제 함수 호출 중에만 잠시 가로채고, 이후에는 원래대로 복구하여 완료 알림을 볼 수 있게 함
+        const originalConfirm = window.confirm;
         window.confirm = function(msg) { 
-            console.log("✅ [자동승인] confirm 창 무시:", msg);
+            console.log("✅ [자동승인] confirm 창 통과:", msg);
             return true; 
         };
 
@@ -48,6 +49,13 @@
             }
         } catch (e) {
             console.error("❌ [실행 오류] goods_permanent_delete 호출 실패:", e);
+        } finally {
+            // (3) 매우 중요: 즉시 원래 confirm 함수로 복구
+            // 이를 통해 삭제 완료 후 뜨는 alert 창 등이 정상 작동하도록 함
+            setTimeout(() => {
+                window.confirm = originalConfirm;
+                console.log("🔄 [복구] 브라우저 confirm 기능을 원래대로 복구했습니다.");
+            }, 500);
         }
     }
 })();
