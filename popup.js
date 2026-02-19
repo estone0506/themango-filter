@@ -1,6 +1,9 @@
-// popup.js - 더망고 필터 수집 익스텐션 (범용 도메인 수집 버전)
+// popup.js - 더망고 필터 수집 익스텐션 (백그라운드 특정 URL 수집 버전)
 
 let filters = [];
+
+// 사용자가 지정한 타겟 URL
+const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
 document.addEventListener('DOMContentLoaded', () => {
     const collectBtn = document.getElementById('collectBtn');
@@ -29,19 +32,31 @@ async function handleCollectClick() {
     const collectBtn = document.getElementById('collectBtn');
     
     try {
-        statusDiv.textContent = '🔄 데이터 추출 중...';
+        statusDiv.textContent = '🔄 백그라운드 필터 수집 중...';
         statusDiv.className = 'status loading';
         collectBtn.disabled = true;
 
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        // 더망고 사이트 도메인만 확인 (상세 URL 체크는 생략)
+        // 더망고 도메인 안에 있는지만 확인
         if (!tab.url.includes('tmg4084.mycafe24.com')) {
             throw new Error('더망고 관리자 페이지에서 실행해주세요.');
         }
 
-        // 현재 탭에서 즉시 수집 시작
-        await collectFilters();
+        // 특정 URL의 데이터를 가져오도록 명령
+        chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA", url: TARGET_FILTER_URL }, (response) => {
+            collectBtn.disabled = false;
+            if (response && response.data && response.data.length > 0) {
+                filters = response.data;
+                statusDiv.textContent = `✅ ${filters.length}개의 필터를 수집했습니다.`;
+                statusDiv.className = 'status success';
+                displayFilters();
+                saveFilters();
+            } else {
+                statusDiv.textContent = '❌ 데이터를 가져오지 못했습니다. 로그인 상태를 확인하세요.';
+                statusDiv.className = 'status error';
+            }
+        });
 
     } catch (error) {
         statusDiv.textContent = `❌ ${error.message}`;
@@ -50,39 +65,6 @@ async function handleCollectClick() {
     }
 }
 
-async function collectFilters() {
-    const statusDiv = document.getElementById('status');
-    const collectBtn = document.getElementById('collectBtn');
-
-    try {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        const response = await chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA" });
-
-        if (response && response.data && response.data.length > 0) {
-            filters = response.data.map(item => ({
-                id: item.uid || item.id,
-                siteId: item.siteId || '',
-                name: item.name,
-                createdDate: item.createdDate || '',
-                checked: false
-            }));
-
-            statusDiv.textContent = `✅ ${filters.length}개의 필터를 수집했습니다.`;
-            statusDiv.className = 'status success';
-            displayFilters();
-            saveFilters();
-        } else {
-            throw new Error('리스트를 찾을 수 없습니다. 필터 목록이 화면에 보이는지 확인하세요.');
-        }
-    } catch (error) {
-        statusDiv.textContent = `❌ ${error.message}`;
-        statusDiv.className = 'status error';
-    } finally {
-        collectBtn.disabled = false;
-    }
-}
-
-// UI 렌더링 및 삭제 기능은 기존과 동일하게 유지
 function displayFilters() {
     const filterList = document.getElementById('filterList');
     const filterItems = document.getElementById('filterItems');

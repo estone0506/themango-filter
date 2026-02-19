@@ -1,12 +1,15 @@
-// content.js - 더망고 웹페이지 제어 및 데이터 추출
+// content.js - 더망고 웹페이지 제어 및 특정 URL 데이터 수집
 
 console.log("The Mango Filter: Content Script Active!");
 
-// 메시지 리스너: 팝업으로부터의 요청 처리
+// 메시지 리스너
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "GET_MANGO_DATA") {
-        const data = scrapeFiltersFromDOM();
-        sendResponse({ data: data });
+        // 요청받은 특정 URL에서 데이터를 백그라운드 수집
+        fetchTargetUrlData(request.url).then(data => {
+            sendResponse({ data: data });
+        });
+        return true; // 비동기 응답 처리
     }
 
     if (request.action === "SYNC_MARKETS") {
@@ -21,34 +24,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
 });
 
-// 현재 페이지에서 필터 데이터 추출
-function scrapeFiltersFromDOM() {
-    const filters = [];
-    const rows = document.querySelectorAll('#search_category tbody tr');
-    let count = 0;
-
-    rows.forEach(row => {
-        if (count >= 10) return;
-        if (row.querySelector('th') || row.style.display === 'none') return;
-
-        const checkbox = row.querySelector('input[name="chk_value"]');
-        const nameInput = row.querySelector('input.input_[type="text"]');
+// 특정 URL의 HTML을 가져와 필터 10개를 추출하는 함수
+async function fetchTargetUrlData(targetUrl) {
+    try {
+        // 현재 로그인 세션(쿠키)을 포함하여 요청
+        const response = await fetch(targetUrl, { credentials: 'include' });
+        const htmlText = await response.text();
         
-        if (checkbox && nameInput) {
-            const [uid, siteId] = checkbox.value.split('|');
-            // 필터 생성일 추출 (날짜 형식이 포함된 span 찾기)
-            const dateSpan = Array.from(row.querySelectorAll('td span')).find(s => s.innerText.match(/\d{4}-\d{2}-\d{2}/));
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, "text/html");
+        
+        const filters = [];
+        const rows = doc.querySelectorAll('#search_category tbody tr');
+        let count = 0;
 
-            filters.push({
-                id: uid,
-                siteId: siteId,
-                name: nameInput.value.trim(),
-                createdDate: dateSpan ? dateSpan.innerText.trim() : ''
-            });
-            count++;
-        }
-    });
-    return filters;
+        rows.forEach(row => {
+            if (count >= 10) return;
+            if (row.querySelector('th') || row.style.display === 'none') return;
+
+            const checkbox = row.querySelector('input[name="chk_value"]');
+            const nameInput = row.querySelector('input.input_[type="text"]');
+            
+            if (checkbox && nameInput) {
+                const [uid, siteId] = checkbox.value.split('|');
+                const dateSpan = Array.from(row.querySelectorAll('td span')).find(s => s.innerText.match(/\d{4}-\d{2}-\d{2}/));
+
+                filters.push({
+                    id: uid,
+                    siteId: siteId,
+                    name: nameInput.value.trim(),
+                    createdDate: dateSpan ? dateSpan.innerText.trim() : ''
+                });
+                count++;
+            }
+        });
+        return filters;
+    } catch (error) {
+        console.error("데이터 fetch 중 오류 발생:", error);
+        return [];
+    }
 }
 
 // 웹페이지의 마켓 체크박스 업데이트
@@ -68,7 +82,6 @@ function updatePageCheckboxes(marketStates) {
             const checkbox = document.getElementById(checkboxId);
             if (checkbox) {
                 checkbox.checked = isChecked;
-                // UI 라벨 색상 변경 (더망고 스타일)
                 const span = document.getElementById(checkboxId.replace('_yn', ''));
                 if (span) {
                     span.className = isChecked ? 'label label-primary market btn_style1' : 'label label-default market btn_style1';
@@ -80,7 +93,6 @@ function updatePageCheckboxes(marketStates) {
 
 // 마켓 삭제 버튼 자동 클릭
 function triggerMarketDelete() {
-    // confirm 창을 자동으로 확인 처리
     const script = document.createElement('script');
     script.textContent = `
         window.confirm = () => true;
