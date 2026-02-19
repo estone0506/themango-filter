@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 마켓 삭제 시작 버튼
     startDeleteBtn.addEventListener('click', async () => {
-        if (!confirm('현재 설정된 마켓의 상품 삭제를 시작하시겠습니까?')) return;
+        // 팝업 내 중복 confirm을 제거하여 더망고 자체 알람만 뜨게 합니다.
         await sendDeleteMessage('selected');
-        updateStatus('🚀 마켓 삭제 프로세스 시작');
+        updateStatus('🚀 마켓 삭제 프로세스 요청됨');
     });
 
     async function loadSavedData() {
