@@ -4,36 +4,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const collectBtn = document.createElement('button');
   
   // UI에 버튼 추가
-  collectBtn.innerText = "더망고 필터 10개 수집";
+  collectBtn.innerText = "현재 페이지 필터 10개 수집";
   collectBtn.className = "primary-btn collect-btn";
   document.getElementById('main-actions').prepend(collectBtn);
 
   // 수집 버튼 클릭 이벤트
   collectBtn.addEventListener('click', async () => {
-    collectBtn.disabled = true;
-    collectBtn.innerText = "수집 중...";
-    
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
-    if (tab && tab.url.includes("tmg4084.mycafe24.com")) {
-      chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA" }, (response) => {
-        collectBtn.disabled = false;
-        collectBtn.innerText = "더망고 필터 10개 수집";
-
-        if (response && response.data && response.data.length > 0) {
-          renderMangoList(response.data);
-        } else {
-          alert("데이터를 가져오지 못했습니다. 로그인 상태를 확인하세요.");
-        }
-      });
-    } else {
-      alert("더망고 관리자 페이지 탭을 활성화해 주세요!");
-      collectBtn.disabled = false;
-      collectBtn.innerText = "더망고 필터 10개 수집";
+    // 1. 더망고 사이트인지 확인
+    if (!tab.url.includes("tmg4084.mycafe24.com")) {
+      alert("더망고 관리자 페이지(tmg4084.mycafe24.com)를 먼저 열어주세요.");
+      return;
     }
+
+    // 2. 필터 관리 페이지인지 확인
+    if (!tab.url.includes("getGoodsCategory.php")) {
+      if (confirm("필터 관리 페이지(getGoodsCategory.php)가 아닙니다. 해당 페이지로 이동할까요?")) {
+        chrome.tabs.update(tab.id, { url: "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc" });
+      }
+      return;
+    }
+
+    collectBtn.disabled = true;
+    collectBtn.innerText = "수집 중...";
+
+    // 3. 페이지 내의 데이터를 직접 수집 요청
+    chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA" }, (response) => {
+      collectBtn.disabled = false;
+      collectBtn.innerText = "현재 페이지 필터 10개 수집";
+
+      if (response && response.data && response.data.length > 0) {
+        renderMangoList(response.data);
+      } else {
+        alert("데이터를 찾을 수 없습니다. 페이지에 필터 리스트가 표시되어 있는지 확인하세요.");
+      }
+    });
   });
 
-  // 수집된 데이터를 체크박스와 수정 가능한 input으로 10개 나열
   function renderMangoList(data) {
     filterList.innerHTML = ''; 
     data.forEach(item => {
@@ -50,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 초기화 버튼
   clearBtn.addEventListener('click', () => {
     filterList.innerHTML = '';
   });
