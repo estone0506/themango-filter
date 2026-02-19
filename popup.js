@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filterTableBody = document.getElementById('filterTableBody');
     const marketSection = document.getElementById('marketSection');
     const startDeleteBtn = document.getElementById('startDeleteBtn');
-    const startDeleteAllBtn = document.getElementById('startDeleteAllBtn');
+    const allMarketChk = document.getElementById('allMarketChk');
 
     const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
@@ -29,20 +29,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tab && tab.url.includes('admin_goods_update_delete.php')) {
             marketSection.style.display = 'block';
             
-            // 페이지의 현재 마켓 체크 상태를 팝업으로 가져오기 (1대1 연동)
             try {
                 const response = await chrome.tabs.sendMessage(tab.id, { action: "GET_PAGE_MARKET_STATUS" });
                 if (response && response.status) {
+                    let allChecked = true;
                     for (const [market, checked] of Object.entries(response.status)) {
                         const chk = document.querySelector(`.market-chk[value="${market}"]`);
                         if (chk) chk.checked = checked;
+                        if (!checked) allChecked = false;
                     }
+                    // 개별 체크 상태에 따라 전체 선택 체크박스 상태 업데이트
+                    allMarketChk.checked = allChecked;
                 }
             } catch(e) {}
         } else {
             marketSection.style.display = 'none';
         }
     }
+
+    // "전체 마켓 선택" 로직
+    allMarketChk.addEventListener('change', async () => {
+        const isChecked = allMarketChk.checked;
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        document.querySelectorAll('.market-chk').forEach(chk => {
+            chk.checked = isChecked;
+            // 각 마켓별로 페이지에 동기화 명령 전송
+            if (tab) {
+                chrome.tabs.sendMessage(tab.id, {
+                    action: "SYNC_MARKETS",
+                    market: chk.value,
+                    checked: isChecked
+                });
+            }
+        });
+    });
 
     async function loadSavedData() {
         chrome.storage.local.get(['savedFilters'], (result) => {
@@ -89,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 마켓 체크박스 연동 (팝업 -> 페이지)
+    // 개별 마켓 체크박스 연동
     document.querySelectorAll('.market-chk').forEach(chk => {
         chk.addEventListener('change', async () => {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -127,16 +148,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateStatus('🚀 페이지 삭제 버튼 클릭됨');
         }
     });
-
-    async function sendDeleteMessage(mode) {
-        try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            await chrome.tabs.sendMessage(tab.id, { action: "TRIGGER_DELETE", mode: mode });
-            updateStatus('🚀 삭제 명령 전송 완료');
-        } catch (error) {
-            updateStatus('❌ 전송 실패');
-        }
-    }
 
     function updateStatus(msg) {
         statusDiv.textContent = msg;
