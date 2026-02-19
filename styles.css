@@ -123,6 +123,17 @@ h1 {
     transform: translateY(-2px);
 }
 
+#startDeleteAllBtn {
+    background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+    margin-top: 8px;
+    border: 1px solid #ff5252;
+}
+
+#startDeleteAllBtn:hover {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    transform: translateY(-2px);
+}
+
 /* 필터 테이블 스타일 */
 .filter-table-container {
     margin: 10px 0;
