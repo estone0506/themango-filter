@@ -9,28 +9,18 @@
 <body>
   <div class="container">
     <header>
-      <!-- 아이콘 이미지 대신 텍스트 로고 사용 -->
       <div class="logo-text">M</div>
       <h1>The Mango Filter</h1>
     </header>
     
     <main>
-      <div class="button-group">
+      <div class="button-group" id="main-actions">
         <!-- '더망고 데이터 수집' 버튼이 main.js에 의해 여기에 추가됩니다 -->
-      </div>
-
-      <div class="input-group">
-        <label for="filter-input">필터 키워드 추가</label>
-        <input type="text" id="filter-input" placeholder="키워드 입력...">
-      </div>
-
-      <div class="button-group">
-        <button id="add-btn" class="primary-btn">추가</button>
-        <button id="clear-btn" class="secondary-btn">초기화</button>
+        <button id="clear-btn" class="secondary-btn">목록 초기화</button>
       </div>
 
       <div class="list-container">
-        <h3>수집/필터 목록</h3>
+        <h3>수집된 필터 목록 (최근 10개)</h3>
         <ul id="filter-list">
           <!-- 데이터가 여기에 표시됩니다 -->
         </ul>

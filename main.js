@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const filterList = document.getElementById('filter-list');
+  const clearBtn = document.getElementById('clear-btn');
   const collectBtn = document.createElement('button');
   
   // UI에 버튼 추가
   collectBtn.innerText = "더망고 필터 10개 수집";
   collectBtn.className = "primary-btn collect-btn";
-  document.querySelector('.button-group').prepend(collectBtn);
+  document.getElementById('main-actions').prepend(collectBtn);
 
   // 수집 버튼 클릭 이벤트
   collectBtn.addEventListener('click', async () => {
@@ -22,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response && response.data && response.data.length > 0) {
           renderMangoList(response.data);
         } else {
-          alert("데이터를 가져오지 못했습니다. 로그인 여부나 페이지 주소를 확인하세요.");
+          alert("데이터를 가져오지 못했습니다. 로그인 상태를 확인하세요.");
         }
       });
     } else {
-      alert("더망고 관리자 페이지 탭을 활성화한 상태에서 실행해 주세요!");
+      alert("더망고 관리자 페이지 탭을 활성화해 주세요!");
       collectBtn.disabled = false;
       collectBtn.innerText = "더망고 필터 10개 수집";
     }
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 초기화 버튼
-  document.getElementById('clear-btn').addEventListener('click', () => {
+  clearBtn.addEventListener('click', () => {
     filterList.innerHTML = '';
   });
 });
