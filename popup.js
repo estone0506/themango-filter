@@ -8,11 +8,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
-    let lastDataJson = ""; // 이전 데이터와 비교하기 위한 변수
+    let lastDataJson = ""; 
 
-    // 1초마다 실시간 수집 실행
+    // 1. 팝업 시작 시 저장된 데이터 불러오기
+    loadSavedData();
+
+    // 2. 1초마다 실시간 수집 실행 (필터 페이지일 때만 업데이트)
     const pollInterval = setInterval(fetchRealtimeData, 1000);
-    fetchRealtimeData(); // 최초 즉시 실행
+    fetchRealtimeData();
+
+    async function loadSavedData() {
+        chrome.storage.local.get(['savedFilters'], (result) => {
+            if (result.savedFilters) {
+                renderFilterTable(result.savedFilters);
+                lastDataJson = JSON.stringify(result.savedFilters);
+                updateStatus('📦 저장된 필터 목록을 불러왔습니다.');
+            }
+        });
+    }
 
     async function fetchRealtimeData() {
         try {
@@ -22,18 +35,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (response && response.data) {
                     const currentDataJson = JSON.stringify(response.data);
                     
-                    // 데이터가 변경되었을 때만 테이블 갱신 (깜빡임 방지)
                     if (currentDataJson !== lastDataJson) {
                         renderFilterTable(response.data);
                         lastDataJson = currentDataJson;
-                        updateStatus('📡 실시간 동기화 중...');
+                        
+                        // 데이터 저장 (영구성 확보)
+                        chrome.storage.local.set({ savedFilters: response.data });
+                        updateStatus('📡 실시간 동기화 완료');
+                    } else {
+                        updateStatus('📡 실시간 연결 중...');
                     }
                 }
             } else {
-                updateStatus('ℹ️ 필터 관리 페이지에서만 수집 가능');
+                // 필터 페이지가 아니어도 테이블은 유지됨 (상태 메시지만 변경)
+                if (lastDataJson) {
+                    updateStatus('✅ 수집된 데이터 유지 중 (페이지 이동 가능)');
+                } else {
+                    updateStatus('ℹ️ 필터 수집 페이지에서 데이터를 가져오세요.');
+                }
             }
         } catch (e) {
-            // 탭이 닫히거나 페이지가 바뀐 경우 에러 무시
+            // 통신 에러 시에도 기존 데이터는 유지
         }
     }
 
