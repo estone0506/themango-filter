@@ -1,4 +1,4 @@
-// popup.js - 더망고 필터 수집 익스텐션 (URL 이동 및 수집 로직 최적화)
+// popup.js - 더망고 필터 수집 익스텐션 (범용 도메인 수집 버전)
 
 let filters = [];
 
@@ -24,38 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSavedFilters();
 });
 
-// 사용자가 요청한 특정 필터 관리 URL
-const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
-
 async function handleCollectClick() {
     const statusDiv = document.getElementById('status');
     const collectBtn = document.getElementById('collectBtn');
     
     try {
-        statusDiv.textContent = '🔄 페이지 확인 중...';
+        statusDiv.textContent = '🔄 데이터 추출 중...';
         statusDiv.className = 'status loading';
         collectBtn.disabled = true;
 
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        // 1. 더망고 사이트인지 확인
+        // 더망고 사이트 도메인만 확인 (상세 URL 체크는 생략)
         if (!tab.url.includes('tmg4084.mycafe24.com')) {
-            throw new Error('더망고 페이지에서 실행해주세요.');
+            throw new Error('더망고 관리자 페이지에서 실행해주세요.');
         }
 
-        // 2. 요청하신 특정 URL인지 확인 (파라미터 포함 여부 체크)
-        if (!tab.url.includes('pmode=filter_delete')) {
-            if (confirm("필터 관리 페이지로 이동하여 10개를 수집할까요?")) {
-                await chrome.tabs.update(tab.id, { url: TARGET_FILTER_URL });
-                statusDiv.textContent = '페이지 로딩 대기 중... (로딩 후 다시 눌러주세요)';
-                return;
-            } else {
-                throw new Error('필터 관리 페이지에서만 수집이 가능합니다.');
-            }
-        }
-
-        // 3. 현재 페이지에서 데이터 추출 요청
-        collectFilters();
+        // 현재 탭에서 즉시 수집 시작
+        await collectFilters();
 
     } catch (error) {
         statusDiv.textContent = `❌ ${error.message}`;
@@ -86,7 +72,7 @@ async function collectFilters() {
             displayFilters();
             saveFilters();
         } else {
-            throw new Error('데이터를 찾을 수 없습니다. 리스트가 화면에 보이는지 확인하세요.');
+            throw new Error('리스트를 찾을 수 없습니다. 필터 목록이 화면에 보이는지 확인하세요.');
         }
     } catch (error) {
         statusDiv.textContent = `❌ ${error.message}`;
@@ -96,7 +82,7 @@ async function collectFilters() {
     }
 }
 
-// 이하 기존 UI 및 삭제 로직 유지...
+// UI 렌더링 및 삭제 기능은 기존과 동일하게 유지
 function displayFilters() {
     const filterList = document.getElementById('filterList');
     const filterItems = document.getElementById('filterItems');
