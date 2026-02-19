@@ -143,8 +143,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // "마켓 삭제 시작" 버튼 클릭 시 페이지의 실제 버튼 클릭 연동
     startDeleteBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        // 체크된 필터 정보 가져오기
+        const selectedCheckbox = document.querySelector('#filterTableBody input[type="checkbox"]:checked');
+        const filterName = selectedCheckbox ? selectedCheckbox.getAttribute('data-name') : "";
+
         if (tab) {
-            chrome.tabs.sendMessage(tab.id, { action: "CLICK_REAL_DELETE_ALL_BTN" });
+            chrome.tabs.sendMessage(tab.id, { 
+                action: "CLICK_REAL_DELETE_ALL_BTN",
+                filterName: filterName // 필터명 함께 전달
+            });
             updateStatus('🚀 페이지 삭제 버튼 클릭됨');
         }
     });
