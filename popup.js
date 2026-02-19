@@ -119,8 +119,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tab) chrome.tabs.update(tab.id, { url: DELETE_PAGE_URL });
     });
 
-    startDeleteBtn.addEventListener('click', () => sendDeleteMessage('selected'));
-    startDeleteAllBtn.addEventListener('click', () => sendDeleteMessage('all'));
+    // "마켓 삭제 시작" 버튼 연동 해제 (기능 비활성화)
+    startDeleteBtn.addEventListener('click', () => {
+        updateStatus('ℹ️ 삭제 기능은 페이지의 버튼을 직접 이용해주세요.');
+    });
 
     async function sendDeleteMessage(mode) {
         try {
