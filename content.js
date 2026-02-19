@@ -26,8 +26,12 @@
         }
 
         if (request.action === "SYNC_MARKETS") {
-            syncMarketOnPage(request.market, request.checked);
-            sendResponse({ status: "synced" });
+            window.postMessage({
+                type: "SET_MARKET_SYNC",
+                market: request.market,
+                checked: request.checked
+            }, "*");
+            sendResponse({ status: "forwarded" });
         }
 
         if (request.action === "GET_PAGE_MARKET_STATUS") {
