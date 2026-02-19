@@ -53,12 +53,12 @@ h1 {
     justify-content: center;
 }
 
-#deleteSelectedBtn {
-    background-color: var(--primary-color);
+#collectFiltersBtn {
+    background-color: #2196F3; /* 파란색 */
 }
 
-#deleteSelectedBtn:hover {
-    background-color: #e68900;
+#collectFiltersBtn:hover {
+    background-color: #1976D2;
     transform: translateY(-2px);
 }
 
