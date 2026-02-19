@@ -89,11 +89,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 2. 전체 삭제 버튼 이벤트
+    // 2. 삭제 페이지로 이동 버튼 이벤트
     deleteAllBtn.addEventListener('click', async () => {
-        if (!confirm('🚨 경고: 검색 결과의 모든 상품을 마켓에서 삭제하시겠습니까?\n(취소할 수 없습니다.)')) return;
-        await sendDeleteMessage('all');
-        updateStatus('🚨 전체 상품 삭제 요청 전송');
+        const DELETE_PAGE_URL = "https://tmg4084.mycafe24.com/mall/admin/admin_goods_update_delete.php";
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+            chrome.tabs.update(tab.id, { url: DELETE_PAGE_URL });
+            updateStatus('🔄 삭제 페이지로 이동 중...');
+        }
     });
 
     // 3. 메시지 전송 함수 (Popup -> Content)

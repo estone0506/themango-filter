@@ -63,12 +63,12 @@ h1 {
 }
 
 #deleteAllBtn {
-    background-color: var(--danger-color);
+    background-color: #444; /* 어두운 회색 */
     margin-top: 5px;
 }
 
 #deleteAllBtn:hover {
-    background-color: #d32f2f;
+    background-color: #555;
     transform: translateY(-2px);
 }
 
