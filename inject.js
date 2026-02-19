@@ -1,4 +1,4 @@
-// inject.js - 더망고 페이지 내부로 주입되는 스크립트 (V3.3)
+// inject.js - 더망고 페이지 내부로 주입되는 스크립트 (V3.4)
 
 (function() {
     console.log("🔥 [더망고 V2] inject.js 로드됨 - 페이지 내부 함수 접근 가능");
@@ -27,18 +27,11 @@
 
     // 2. 삭제 실행 로직
     function executeDelete(mode) {
-        console.log(`🚀 [실행] 마켓 삭제 프로세스 시작 - 유형: ${mode}`);
+        console.log(`🚀 [실행] 마켓 삭제 함수 호출 - 유형: ${mode}`);
 
-        // (1) 브라우저 확인창(confirm) 임시 백업 및 자동 승인 설정
-        // 첫 번째 "정말 삭제할까요?" 질문만 자동으로 넘깁니다.
-        const originalConfirm = window.confirm;
-        window.confirm = function() { 
-            console.log("✅ [자동승인] 첫 번째 삭제 확인창 통과");
-            return true; 
-        };
-
+        // 자동 승인(confirm 오버라이드) 로직을 모두 제거했습니다.
+        // 이제 더망고 페이지의 원래 확인창이 나타납니다.
         try {
-            // (2) 더망고 전역 함수 호출
             if (mode === 'all') {
                 window.goods_permanent_delete('all', '', '', '');
             } else {
@@ -47,11 +40,5 @@
         } catch (e) {
             console.error("❌ [실행 오류] 호출 실패:", e);
         }
-
-        // (3) ★ 핵심: 함수 호출 직후 즉시 복구
-        // 삭제 성공 후 뜨는 alert(5.JPG)이 정상적으로 작동할 수 있도록 보장함
-        // 딜레이 없이 즉시 복구하여 뒤따르는 알림창을 가로채지 않습니다.
-        window.confirm = originalConfirm;
-        console.log("🔄 [복구] 브라우저 알림 기능을 즉시 정상화했습니다.");
     }
 })();
