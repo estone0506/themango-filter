@@ -28,11 +28,17 @@ header {
   padding-bottom: 10px;
 }
 
-.logo {
+.logo-text {
   width: 32px;
   height: 32px;
   background-color: var(--primary-color);
-  border-radius: 50%;
+  color: var(--text-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
 }
 
 h1 {
