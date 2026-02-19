@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         filters.forEach((filter, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><input type="checkbox" data-id="${filter.id}"></td>
+                <td><input type="checkbox" data-id="${filter.id}" data-name="${filter.name}"></td>
                 <td style="text-align:left; padding-left:10px;">${filter.name}</td>
                 <td>${filter.id}</td>
             `;
@@ -91,11 +91,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. 삭제 페이지로 이동 버튼 이벤트
     deleteAllBtn.addEventListener('click', async () => {
-        const DELETE_PAGE_URL = "https://tmg4084.mycafe24.com/mall/admin/admin_goods_update_delete.php?bmode=market_only&amode=detail_search&search_d=&pg=1&search_type=&ps_fn=&ps_sort=&ps_num=10&ps_simple=1&ps_modify=&ps_gmarket_option=&filter_code=&date_type=&ps_chd=&start_yy=2026&start_mm=2&start_dd=19&end_yy=2026&end_mm=2&end_dd=19&ps_site_id=&ps_market_id=&ps_status=sale&search_type=filter_name&ps_subject=%EC%9D%B4%EB%A0%88%EB%B8%8C%EC%9B%90-ZARA-%EC%97%AC%EC%84%B1%2F%EC%85%94%EC%B8%A0&hid_order_sql=%2522%2520order%2520by%2520%2520uid%2520asc%2522&hid_search_sql=+where+goods_class+%3D+%270%27++and+goods_status+%3D+%270%27+";
+        // 체크된 필터 찾기
+        const selectedCheckbox = document.querySelector('#filterTableBody input[type="checkbox"]:checked');
+        
+        if (!selectedCheckbox) {
+            alert('이동할 필터를 테이블에서 먼저 선택해주세요.');
+            return;
+        }
+
+        const filterName = selectedCheckbox.getAttribute('data-name');
+        const encodedName = encodeURIComponent(filterName);
+
+        // 동적 URL 생성 (ps_subject 부분 교체)
+        const DELETE_PAGE_URL = `https://tmg4084.mycafe24.com/mall/admin/admin_goods_update_delete.php?bmode=market_only&amode=detail_search&search_d=&pg=1&search_type=&ps_fn=&ps_sort=&ps_num=10&ps_simple=1&ps_modify=&ps_gmarket_option=&filter_code=&date_type=&ps_chd=&start_yy=2026&start_mm=2&start_dd=19&end_yy=2026&end_mm=2&end_dd=19&ps_site_id=&ps_market_id=&ps_status=sale&search_type=filter_name&ps_subject=${encodedName}&hid_order_sql=%2522%2520order%2520by%2520%2520uid%2520asc%2522&hid_search_sql=+where+goods_class+%3D+%270%27++and+goods_status+%3D+%270%27+`;
+        
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab) {
             chrome.tabs.update(tab.id, { url: DELETE_PAGE_URL });
-            updateStatus('🔄 상세 삭제 페이지로 이동 중...');
+            updateStatus(`🔄 [${filterName}] 검색 결과로 이동 중...`);
         }
     });
 
