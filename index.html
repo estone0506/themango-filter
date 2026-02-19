@@ -1,14 +1,41 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Mango Filter</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+  <div class="container">
+    <header>
+      <img src="icons/icon48.png" alt="Logo" class="logo" id="logo-placeholder">
+      <h1>The Mango Filter</h1>
+    </header>
+    
+    <main>
+      <div class="input-group">
+        <label for="filter-input">필터 키워드</label>
+        <input type="text" id="filter-input" placeholder="필터링할 단어를 입력하세요...">
+      </div>
+
+      <div class="button-group">
+        <button id="add-btn" class="primary-btn">추가</button>
+        <button id="clear-btn" class="secondary-btn">초기화</button>
+      </div>
+
+      <div class="list-container">
+        <h3>필터 목록</h3>
+        <ul id="filter-list">
+          <!-- 필터링된 항목이 여기에 추가됩니다 -->
+        </ul>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 The Mango Filter</p>
+    </footer>
+  </div>
+  <script src="main.js"></script>
 </body>
 </html>
