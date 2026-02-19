@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clearBtn = document.getElementById('clearBtn');
     const selectAllMarkets = document.getElementById('selectAllMarkets');
     const deleteStartBtn = document.getElementById('deleteStartBtn');
+    const deleteAllBtn = document.getElementById('deleteAllBtn');
     const marketOptions = document.getElementById('marketOptions');
 
     // 현재 탭 확인 및 마켓 옵션창 자동 활성화
@@ -23,7 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (exportBtn) exportBtn.addEventListener('click', exportFilters);
     if (clearBtn) clearBtn.addEventListener('click', clearFilters);
     if (selectAllMarkets) selectAllMarkets.addEventListener('change', toggleAllMarkets);
-    if (deleteStartBtn) deleteStartBtn.addEventListener('click', startMarketDelete);
+    if (deleteStartBtn) deleteStartBtn.addEventListener('click', () => startMarketDelete('selected'));
+    if (deleteAllBtn) deleteAllBtn.addEventListener('click', () => startMarketDelete('all'));
 
     // 마켓 체크박스 실시간 연동 (Change 이벤트 발생 시 즉시 전송)
     document.querySelectorAll('.market-checkbox[name="market"]').forEach(checkbox => {
@@ -62,13 +64,13 @@ async function exportFilters() {
     document.getElementById('marketOptions').style.display = 'block';
 }
 
-async function startMarketDelete() {
+async function startMarketDelete(type) {
     const selectedMarkets = Array.from(document.querySelectorAll('.market-checkbox[name="market"]:checked')).map(cb => cb.value);
     if (selectedMarkets.length === 0) { alert('삭제할 마켓을 선택해주세요.'); return; }
     
     if (confirm(`선택한 ${selectedMarkets.length}개 마켓에서 상품을 삭제하시겠습니까?`)) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        await chrome.tabs.sendMessage(tab.id, { action: "TRIGGER_DELETE" });
+        await chrome.tabs.sendMessage(tab.id, { action: "TRIGGER_DELETE", deleteType: type });
     }
 }
 
