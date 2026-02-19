@@ -1,4 +1,4 @@
-// content.js - 다리 역할 스크립트 (V3.6)
+// content.js - 다리 역할 스크립트 (V4.8)
 
 (function() {
     console.log("🌐 [더망고 V2] content.js 로드됨");
@@ -17,12 +17,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             injectScript();
             startObservingStatus();
-            autoCheckFirstFilter(); // [V4.6 추가]
+            autoCheckFirstFilter(); 
         });
     } else {
         injectScript();
         startObservingStatus();
-        autoCheckFirstFilter(); // [V4.6 추가]
+        autoCheckFirstFilter();
     }
 
     let currentFilterName = ""; // 현재 작업 중인 필터명 저장용
@@ -81,31 +81,7 @@
         return filters.slice(0, 10);
     }
 
-    // 마켓 상태 동기화 (팝업 -> 페이지)
-    function syncMarketOnPage(market, checked) {
-        const checkboxMap = {
-            'coupang': 'chk_coupang_yn',
-            'gmarket': 'chk_gmarket20_yn',
-            '11st': 'chk_11st_yn',
-            'smartstore': 'chk_smartstore_yn',
-            'lotteon': 'chk_lotteon_yn',
-            'auction': 'chk_auction20_yn'
-        };
-        const checkboxId = checkboxMap[market];
-        if (checkboxId) {
-            const checkbox = document.getElementById(checkboxId);
-            if (checkbox) {
-                checkbox.checked = checked;
-                const spanId = checkboxId.replace('_yn', '');
-                const span = document.getElementById(spanId);
-                if (span) {
-                    span.className = checked ? 'label label-primary market btn_style1' : 'label label-default market btn_style1';
-                }
-            }
-        }
-    }
-
-    // 현재 페이지 마켓 상태 가져오기 (페이지 -> 팝업)
+    // 현재 페이지 마켓 상태 가져오기
     function getPageMarketStatus() {
         const checkboxMap = {
             'coupang': 'chk_coupang_yn',
@@ -139,13 +115,12 @@
         }
     }
 
-    // [V4.5 추가] URL에서 파라미터 추출하는 함수
     function getParamFromUrl(name) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name) || "";
     }
 
-    // [V4.1 추가] 페이지 내 삭제 상태 감시 관찰자
+    // 페이지 내 삭제 상태 감시 관찰자
     function startObservingStatus() {
         const targetNode = document.getElementById('layer_page');
         if (!targetNode) {
@@ -161,15 +136,13 @@
                 
                 try { chrome.runtime.sendMessage({ action: "DELETE_COMPLETED" }); } catch(e) {}
 
-                // 3초 후 자동 페이지 이동
                 setTimeout(() => {
-                    // 1순위: 팝업에서 전달받은 이름, 2순위: 현재 페이지 URL의 ps_subject 값
                     const filterName = currentFilterName || getParamFromUrl('ps_subject');
                     const encodedName = encodeURIComponent(filterName);
                     
-                    const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc`;
+                    // 삭제 후 이동임을 알리는 플래그 추가
+                    const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
                     
-                    console.log(`🚚 [V4.5] ${filterName} 관리 페이지로 이동합니다.`);
                     window.location.href = REDIRECT_URL;
                 }, 3000);
 
@@ -179,23 +152,21 @@
 
         const observer = new MutationObserver(callback);
         observer.observe(targetNode, config);
-        console.log("👀 [더망고 V2] 삭제 상태 감시를 시작했습니다.");
     }
 
-    // [V4.6 추가] 필터 페이지 이동 후 첫 번째 항목 자동 체크
+    // 삭제 완료 후 이동했을 때만 첫 번째 항목 자동 체크
     function autoCheckFirstFilter() {
-        if (window.location.href.includes('getGoodsCategory.php') && window.location.href.includes('sch_keyword=')) {
-            console.log("🔎 [더망고 V2] 필터 자동 체크 시도 중...");
+        const url = window.location.href;
+        if (url.includes('getGoodsCategory.php') && url.includes('sch_keyword=') && url.includes('is_after_del=Y')) {
+            console.log("🔎 [더망고 V2] 삭제 완료 후 자동 체크 시도 중...");
             
             setTimeout(() => {
                 const firstCheckbox = document.querySelector('#search_category tbody tr input[name="chk_value"]');
                 if (firstCheckbox) {
                     firstCheckbox.checked = true;
                     console.log("✅ [더망고 V2] 첫 번째 필터를 자동으로 선택했습니다.");
-                } else {
-                    console.log("ℹ️ [더망고 V2] 체크할 필터를 찾지 못했습니다.");
                 }
-            }, 500); 
+            }, 800); 
         }
     }
 })();
