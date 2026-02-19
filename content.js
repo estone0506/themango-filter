@@ -28,6 +28,11 @@
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log("📨 [수신] Popup 메시지:", request);
 
+        if (request.action === "GET_FILTERS") {
+            const filters = scrapeFilters();
+            sendResponse({ data: filters });
+        }
+
         if (request.action === "TRIGGER_DELETE") {
             // 주입이 안 된 경우 다시 시도
             injectScript();
@@ -46,4 +51,23 @@
         }
         return true;
     });
+
+    // 3. 필터 수집 함수
+    function scrapeFilters() {
+        const filters = [];
+        const rows = document.querySelectorAll('#search_category tbody tr');
+        
+        rows.forEach(row => {
+            const checkbox = row.querySelector('input[name="chk_value"]');
+            const nameInput = row.querySelector('input.input_[type="text"]');
+            
+            if (checkbox && nameInput) {
+                const uid = checkbox.value.split('|')[0];
+                const name = nameInput.value.trim();
+                filters.push({ id: uid, name: name });
+            }
+        });
+        
+        return filters.slice(0, 10); // 상위 10개만 반환
+    }
 })();
