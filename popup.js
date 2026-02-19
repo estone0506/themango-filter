@@ -1,8 +1,8 @@
-// popup.js - 더망고 필터 수집 익스텐션 (백그라운드 특정 URL 수집 버전)
+// popup.js - 더망고 필터 수집 익스텐션 (URL 이동 후 수집 버전)
 
 let filters = [];
 
-// 사용자가 지정한 타겟 URL
+// 사용자가 지정한 필터 10개 정렬 URL
 const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,19 +32,32 @@ async function handleCollectClick() {
     const collectBtn = document.getElementById('collectBtn');
     
     try {
-        statusDiv.textContent = '🔄 백그라운드 필터 수집 중...';
+        statusDiv.textContent = '🔄 페이지 확인 중...';
         statusDiv.className = 'status loading';
         collectBtn.disabled = true;
 
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        // 더망고 도메인 안에 있는지만 확인
+        // 1. 더망고 도메인 확인
         if (!tab.url.includes('tmg4084.mycafe24.com')) {
             throw new Error('더망고 관리자 페이지에서 실행해주세요.');
         }
 
-        // 특정 URL의 데이터를 가져오도록 명령
-        chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA", url: TARGET_FILTER_URL }, (response) => {
+        // 2. 타겟 URL인지 확인 (파라미터 ft_num=10 포함 여부 등으로 체크)
+        if (!tab.url.includes('ft_num=10') || !tab.url.includes('pmode=filter_delete')) {
+            // URL이 다르면 이동 시킴
+            if (confirm("필터 10개 수집 페이지로 이동할까요?")) {
+                await chrome.tabs.update(tab.id, { url: TARGET_FILTER_URL });
+                statusDiv.textContent = '페이지 이동 중... 이동 후 다시 버튼을 눌러주세요.';
+                return;
+            } else {
+                throw new Error('수집을 위해 해당 페이지로 이동이 필요합니다.');
+            }
+        }
+
+        // 3. 현재 페이지(DOM)에서 데이터 수집 시작
+        statusDiv.textContent = '🔄 현재 화면에서 필터 추출 중...';
+        chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA_FROM_DOM" }, (response) => {
             collectBtn.disabled = false;
             if (response && response.data && response.data.length > 0) {
                 filters = response.data;
@@ -53,7 +66,7 @@ async function handleCollectClick() {
                 displayFilters();
                 saveFilters();
             } else {
-                statusDiv.textContent = '❌ 데이터를 가져오지 못했습니다. 로그인 상태를 확인하세요.';
+                statusDiv.textContent = '❌ 리스트를 찾을 수 없습니다. (로그인 및 화면 확인)';
                 statusDiv.className = 'status error';
             }
         });
@@ -68,6 +81,7 @@ async function handleCollectClick() {
 function displayFilters() {
     const filterList = document.getElementById('filterList');
     const filterItems = document.getElementById('filterItems');
+    if (!filterList || !filterItems) return;
     filterList.style.display = 'block';
     filterItems.innerHTML = '';
     filters.forEach((filter, index) => {
@@ -93,6 +107,7 @@ function displayFilters() {
     });
     updateSelectedCount();
 }
+
 function toggleSelectAll(e) {
     const checked = e.target.checked;
     filters.forEach(filter => filter.checked = checked);
@@ -100,23 +115,23 @@ function toggleSelectAll(e) {
     updateSelectedCount();
     saveFilters();
 }
+
 function updateSelectedCount() {
     const selectedCount = filters.filter(f => f.checked).length;
     const countSpan = document.getElementById('selectedCount');
     if (countSpan) countSpan.textContent = `(${selectedCount}/${filters.length} 선택)`;
 }
+
 async function exportFilters() {
     const selectedFilters = filters.filter(f => f.checked);
     if (selectedFilters.length === 0) { alert('삭제할 필터를 선택해주세요.'); return; }
     if (selectedFilters.length > 1) { alert('한 번에 하나의 필터만 선택해주세요.'); return; }
     const filter = selectedFilters[0];
-    const filterName = encodeURIComponent(filter.name);
-    const filterId = filter.id;
-    const url = `https://tmg4084.mycafe24.com/mall/admin/admin_goods_update_delete.php?bmode=market_only&amode=detail_search&search_type=filter_name&filter_code=${filterId}&ps_subject=${filterName}&ps_status=sale`;
+    const url = `https://tmg4084.mycafe24.com/mall/admin/admin_goods_update_delete.php?bmode=market_only&amode=detail_search&search_type=filter_name&filter_code=${filter.id}&ps_subject=${encodeURIComponent(filter.name)}&ps_status=sale`;
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.tabs.update(tab.id, { url: url });
-    document.getElementById('marketOptions').style.display = 'block';
 }
+
 async function syncMarketCheckboxesToPage() {
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -127,28 +142,33 @@ async function syncMarketCheckboxesToPage() {
         await chrome.tabs.sendMessage(tab.id, { action: "SYNC_MARKETS", states: marketStates });
     } catch (error) { console.error('동기화 오류:', error); }
 }
+
 async function toggleAllMarkets(e) {
     const checked = e.target.checked;
     document.querySelectorAll('.market-checkbox[name="market"]').forEach(checkbox => { checkbox.checked = checked; });
     await syncMarketCheckboxesToPage();
 }
+
 async function startMarketDelete() {
     const selectedMarkets = Array.from(document.querySelectorAll('.market-checkbox[name="market"]:checked')).map(cb => cb.value);
     if (selectedMarkets.length === 0) { alert('삭제할 마켓을 선택해주세요.'); return; }
     if (confirm(`선택한 ${selectedMarkets.length}개 마켓에서 상품을 삭제하시겠습니까?`)) {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         await chrome.tabs.sendMessage(tab.id, { action: "TRIGGER_DELETE" });
-        alert('마켓 삭제가 시작되었습니다.');
     }
 }
+
 function clearFilters() {
     if (confirm('모든 필터 목록을 지우시겠습니까?')) {
         filters = [];
-        document.getElementById('filterList').style.display = 'none';
-        document.getElementById('status').textContent = '';
+        const filterList = document.getElementById('filterList');
+        if (filterList) filterList.style.display = 'none';
+        const status = document.getElementById('status');
+        if (status) status.textContent = '';
         saveFilters();
     }
 }
+
 function saveFilters() { chrome.storage.local.set({ filters: filters }); }
 function loadSavedFilters() {
     chrome.storage.local.get(['filters'], (result) => {
