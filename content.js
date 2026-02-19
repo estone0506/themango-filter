@@ -3,6 +3,8 @@
 console.log("The Mango Filter: Content Script Active!");
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("Message received in content.js:", request.action, request);
+
     if (request.action === "GET_MANGO_DATA_FROM_DOM") {
         sendResponse({ data: scrapeFiltersFromDOM() });
     }
@@ -15,6 +17,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // [자동 삭제] "마켓 삭제 시작" 또는 "마켓삭제시작(검색결과모든상품)" 연동 실행
     if (request.action === "TRIGGER_DELETE") {
+        console.log("TRIGGER_DELETE action detected with type:", request.deleteType);
         executeMarketDeleteOnPage(request.deleteType);
         sendResponse({ status: "triggered" });
     }
@@ -54,11 +57,9 @@ function updatePageCheckboxes(marketStates) {
             const checkbox = document.getElementById(checkboxId);
             if (checkbox) {
                 checkbox.checked = isChecked;
-                // 웹페이지 내의 라벨 색상 및 스타일 연동 (더망고 내부 select_tab 로직 모사)
                 const spanId = checkboxId.replace('_yn', '');
                 const span = document.getElementById(spanId);
                 if (span) {
-                    // 페이지 소스에서 확인된 실제 클래스명 적용 (label-primary 또는 label-default)
                     span.className = isChecked ? 'label label-primary market btn_style1' : 'label label-default market btn_style1';
                 }
             }
@@ -68,48 +69,48 @@ function updatePageCheckboxes(marketStates) {
 
 // 웹페이지의 삭제 버튼과 직접 연동하는 핵심 함수
 function executeMarketDeleteOnPage(deleteType) {
-    // 페이지의 컨텍스트에서 코드를 실행하기 위해 스크립트 주입
     const script = document.createElement('script');
     script.textContent = `
         (function() {
-            // 1. 브라우저 확인창(confirm) 자동 '확인' 처리 (자동화 필수 단계)
+            // 1. 브라우저 확인창(confirm, alert) 자동 '확인' 처리
             window.confirm = function() { return true; };
+            window.alert = function(msg) { console.log('더망고 알림: ' + msg); return true; };
             
-            console.log('더망고 확장앱: 삭제 프로세스 시작 (${deleteType})');
+            console.log('더망고 확장앱: 페이지 내 삭제 로직 실행 시작 - 유형: ${deleteType}');
 
             const isAll = '${deleteType}' === 'all';
             
-            // 2. 실제 삭제 버튼 찾기 및 실행
-            const deleteButtons = Array.from(document.querySelectorAll('a.defbtn_med.dtype2, a.defbtn_med, button'));
+            // 2. 버튼 찾기 (텍스트 및 onclick 속성 기반)
+            const allElements = Array.from(document.querySelectorAll('a, button'));
             let targetBtn = null;
 
             if (isAll) {
-                // "마켓삭제시작(검색결과모든상품)" 버튼 찾기
-                targetBtn = deleteButtons.find(btn => 
-                    (btn.innerText.includes('마켓삭제시작') && btn.innerText.includes('검색결과모든상품')) ||
-                    (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("goods_permanent_delete('all'"))
+                // "마켓삭제시작(검색결과모든상품)" 버튼
+                targetBtn = allElements.find(el => 
+                    (el.innerText.includes('마켓삭제시작') && el.innerText.includes('모든상품')) ||
+                    (el.getAttribute('onclick') && el.getAttribute('onclick').includes("goods_permanent_delete('all'"))
                 );
             } else {
-                // "마켓 삭제 시작" (선택 상품) 버튼 찾기
-                targetBtn = deleteButtons.find(btn => 
-                    (btn.innerText.includes('마켓 삭제 시작') && !btn.innerText.includes('모든상품')) ||
-                    (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("goods_permanent_delete('')")) ||
-                    (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("goods_permanent_delete()"))
+                // "마켓 삭제 시작" (선택 상품) 버튼
+                targetBtn = allElements.find(el => 
+                    (el.innerText.includes('마켓 삭제 시작') && !el.innerText.includes('모든상품')) ||
+                    (el.getAttribute('onclick') && el.getAttribute('onclick').includes("goods_permanent_delete('')")) ||
+                    (el.getAttribute('onclick') && el.getAttribute('onclick').includes("goods_permanent_delete()") && !el.getAttribute('onclick').includes("'all'"))
                 );
             }
 
             if (targetBtn) {
-                console.log('더망고 확장앱: 타겟 버튼 클릭 실행');
+                console.log('더망고 확장앱: 타겟 버튼 발견, 클릭 실행', targetBtn);
                 targetBtn.click();
             } else if (typeof goods_permanent_delete === 'function') {
-                console.log('더망고 확장앱: 전역 함수 직접 호출 실행');
+                console.log('더망고 확장앱: 버튼을 못 찾아 전역 함수 직접 호출');
                 if (isAll) {
                     goods_permanent_delete('all', '', '', '');
                 } else {
                     goods_permanent_delete('', '', '', '');
                 }
             } else {
-                alert('삭제 버튼이나 함수를 찾을 수 없습니다. 페이지를 확인해주세요.');
+                console.error('더망고 확장앱: 삭제 버튼이나 실행 함수를 찾을 수 없습니다.');
             }
         })();
     `;
