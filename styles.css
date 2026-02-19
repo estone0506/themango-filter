@@ -1,343 +1,99 @@
-/* styles.css - 더망고 필터 수집 익스텐션 스타일 */
+/* styles.css - 더망고 V2 다크 테마 */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+:root {
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --primary-color: #ff9800; /* 주황색 (선택 삭제) */
+    --danger-color: #f44336; /* 빨간색 (전체 삭제) */
+    --status-bg: #333;
 }
 
 body {
-    width: 400px;
-    min-height: 300px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #333;
+    width: 320px;
+    padding: 20px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
 }
 
 .container {
-    background: white;
-    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
+h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
     text-align: center;
+    color: var(--text-color);
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
 }
 
-    header h1 {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-.action-section {
-    padding: 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
+.delete-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.collect-btn {
-    width: 100%;
-    padding: 14px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+.delete-btn {
+    padding: 12px;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
 }
 
-    .collect-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
+#deleteSelectedBtn {
+    background-color: var(--primary-color);
+}
 
-    .collect-btn:active {
-        transform: translateY(0);
-    }
+#deleteSelectedBtn:hover {
+    background-color: #e68900;
+    transform: translateY(-2px);
+}
 
-    .collect-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
+#deleteAllBtn {
+    background-color: var(--danger-color);
+    margin-top: 5px;
+}
 
-.btn-icon {
-    font-size: 20px;
+#deleteAllBtn:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
 }
 
 .status {
-    margin-top: 12px;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 13px;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: var(--status-bg);
+    color: #fff;
+    font-size: 12px;
     text-align: center;
-    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-    .status.loading {
-        background: #e7f3ff;
-        color: #0066cc;
-    }
-
-    .status.success {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .status.error {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    .status.warning {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .status.info {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-.filter-list {
-    max-height: 500px;
-    overflow-y: auto;
+/* 스크롤바 커스터마이징 */
+::-webkit-scrollbar {
+    width: 6px;
 }
 
-.list-header {
-    padding: 16px 20px;
-    background: #f8f9fa;
-    border-bottom: 2px solid #e9ecef;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 3px;
 }
 
-.select-all-label {
-    font-weight: 600;
-    font-size: 14px;
-    color: #495057;
-    cursor: pointer;
-    flex: 1;
+::-webkit-scrollbar-track {
+    background: #222;
 }
-
-.selected-count {
-    font-size: 13px;
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #667eea;
-}
-
-.filter-items {
-    padding: 12px;
-}
-
-.filter-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    margin-bottom: 8px;
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-    .filter-item:hover {
-        border-color: #667eea;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-    }
-
-.filter-name-input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    transition: all 0.2s ease;
-}
-
-    .filter-name-input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-.filter-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 140px;
-    align-items: flex-end;
-    justify-content: center;
-}
-
-.filter-date {
-    font-size: 11px;
-    color: #6c757d;
-    font-weight: 500;
-    white-space: nowrap;
-}
-
-.action-buttons {
-    padding: 16px 20px;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-    display: flex;
-    gap: 10px;
-}
-
-.action-btn {
-    flex: 1;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.export-btn {
-    background: #dc3545;
-    color: white;
-}
-
-    .export-btn:hover {
-        background: #c82333;
-        transform: translateY(-1px);
-    }
-
-.clear-btn {
-    background: #6c757d;
-    color: white;
-}
-
-    .clear-btn:hover {
-        background: #5a6268;
-        transform: translateY(-1px);
-    }
-
-.action-btn:active {
-    transform: translateY(0);
-}
-
-/* 스크롤바 스타일 */
-.filter-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.filter-list::-webkit-scrollbar-track {
-    background: #f1f3f5;
-}
-
-.filter-list::-webkit-scrollbar-thumb {
-    background: #adb5bd;
-    border-radius: 4px;
-}
-
-    .filter-list::-webkit-scrollbar-thumb:hover {
-        background: #868e96;
-    }
-
-/* 마켓 선택 옵션 */
-.market-options {
-    padding: 20px;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
-}
-
-.market-checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 15px;
-}
-
-.market-checkbox-label {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-    .market-checkbox-label:hover {
-        border-color: #667eea;
-        background: #f8f9ff;
-    }
-
-    .market-checkbox-label:first-child {
-        width: 100%;
-        background: #e7f3ff;
-        border-color: #667eea;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-
-.market-checkbox {
-    margin-right: 6px;
-    cursor: pointer;
-    accent-color: #667eea;
-}
-
-.delete-start-section {
-    margin-top: 15px;
-}
-
-.delete-start-btn {
-    width: 100%;
-    padding: 14px 20px;
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-    .delete-start-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-    }
-
-    .delete-start-btn:active {
-        transform: translateY(0);
-    }
-
-    .delete-start-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }

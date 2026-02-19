@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>더망고 필터 수집</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🥭 더망고 필터 수집</h1>
+        </header>
+
+        <div class="action-section">
+            <button id="collectBtn" class="collect-btn">
+                <span class="btn-icon">📥</span>
+                필터 수집
+            </button>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div id="filterList" class="filter-list" style="display: none;">
+            <div class="list-header">
+                <input type="checkbox" id="selectAll" class="checkbox">
+                <label for="selectAll" class="select-all-label">전체 선택</label>
+                <span id="selectedCount" class="selected-count">(0/0 선택)</span>
+            </div>
+
+            <div id="filterItems" class="filter-items"></div>
+
+            <div class="action-buttons">
+                <button id="exportBtn" class="action-btn export-btn">마켓 삭제</button>
+                <button id="clearBtn" class="action-btn clear-btn">목록 지우기</button>
+            </div>
+
+            <div id="marketOptions" class="market-options" style="display: none;">
+                <div class="market-checkboxes">
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" id="selectAllMarkets">
+                        <span>상품을 삭제할 마켓을 선택하세요.</span>
+                    </label>
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" name="market" value="coupang" checked>
+                        <span>#쿠팡2.0</span>
+                    </label>
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" name="market" value="gmarket" checked>
+                        <span>#G마켓2.0</span>
+                    </label>
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" name="market" value="11st">
+                        <span>#11번가</span>
+                    </label>
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" name="market" value="smartstore">
+                        <span>#스마트스토어</span>
+                    </label>
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" name="market" value="lotteon">
+                        <span>#롯데ON</span>
+                    </label>
+                    <label class="market-checkbox-label">
+                        <input type="checkbox" class="market-checkbox" name="market" value="auction">
+                        <span>#옥션</span>
+                    </label>
+                </div>
+
+                <div class="delete-start-section">
+                    <button id="deleteStartBtn" class="delete-start-btn">마켓 삭제 시작</button>
+                    <button id="deleteAllBtn" class="delete-start-btn" style="margin-top: 10px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);">마켓삭제시작(검색결과모든상품)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

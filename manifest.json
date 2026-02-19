@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "더망고 필터 수집 익스텐션",
-  "version": "1.0.0",
-  "description": "더망고 관리자 페이지에서 필터 정보를 수집하는 크롬 익스텐션",
+  "name": "The Mango Filter (V2)",
+  "version": "2.0.0",
+  "description": "더망고 마켓 상품 삭제 및 필터 관리 전용 확장 프로그램 (재건축 버전)",
   "permissions": [
     "activeTab",
     "scripting",
@@ -12,15 +12,20 @@
     "https://tmg4084.mycafe24.com/*"
   ],
   "action": {
-    "default_popup": "popup.html"
-  },
-  "background": {
-    "service_worker": "background.js"
+    "default_popup": "popup.html",
+    "default_title": "더망고 필터 관리"
   },
   "content_scripts": [
     {
       "matches": [ "https://tmg4084.mycafe24.com/*" ],
-      "js": [ "content.js" ]
+      "js": [ "content.js" ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [ "inject.js" ],
+      "matches": [ "https://tmg4084.mycafe24.com/*" ]
     }
   ]
 }
