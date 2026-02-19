@@ -8,21 +8,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
-    // 페이지 진입 시 자동 수집 시도
-    initPopup();
+    let lastDataJson = ""; // 이전 데이터와 비교하기 위한 변수
 
-    async function initPopup() {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab && tab.url.includes('getGoodsCategory.php')) {
-            try {
+    // 1초마다 실시간 수집 실행
+    const pollInterval = setInterval(fetchRealtimeData, 1000);
+    fetchRealtimeData(); // 최초 즉시 실행
+
+    async function fetchRealtimeData() {
+        try {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab && tab.url.includes('getGoodsCategory.php')) {
                 const response = await chrome.tabs.sendMessage(tab.id, { action: "GET_FILTERS" });
                 if (response && response.data) {
-                    renderFilterTable(response.data);
-                    updateStatus('✅ 필터 정보를 수집했습니다.');
+                    const currentDataJson = JSON.stringify(response.data);
+                    
+                    // 데이터가 변경되었을 때만 테이블 갱신 (깜빡임 방지)
+                    if (currentDataJson !== lastDataJson) {
+                        renderFilterTable(response.data);
+                        lastDataJson = currentDataJson;
+                        updateStatus('📡 실시간 동기화 중...');
+                    }
                 }
-            } catch (e) {
-                console.error('필터 수집 실패:', e);
+            } else {
+                updateStatus('ℹ️ 필터 관리 페이지에서만 수집 가능');
             }
+        } catch (e) {
+            // 탭이 닫히거나 페이지가 바뀐 경우 에러 무시
         }
     }
 
