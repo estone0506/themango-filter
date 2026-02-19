@@ -1,4 +1,4 @@
-// content.js - 다리 역할 스크립트 (V4.8)
+// content.js - 다리 역할 스크립트 (V5.0)
 
 (function() {
     console.log("🌐 [더망고 V2] content.js 로드됨");
@@ -17,12 +17,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             injectScript();
             startObservingStatus();
-            autoCheckFirstFilter(); 
+            autoCheckAndCollect(); 
         });
     } else {
         injectScript();
         startObservingStatus();
-        autoCheckFirstFilter();
+        autoCheckAndCollect();
     }
 
     let currentFilterName = ""; // 현재 작업 중인 필터명 저장용
@@ -47,7 +47,7 @@
         }
 
         if (request.action === "CLICK_REAL_DELETE_ALL_BTN") {
-            currentFilterName = request.filterName; // 팝업에서 보낸 필터명 기억
+            currentFilterName = request.filterName; 
             clickWebpageDeleteAllBtn();
             sendResponse({ status: "clicked" });
         }
@@ -139,10 +139,7 @@
                 setTimeout(() => {
                     const filterName = currentFilterName || getParamFromUrl('ps_subject');
                     const encodedName = encodeURIComponent(filterName);
-                    
-                    // 삭제 후 이동임을 알리는 플래그 추가
                     const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
-                    
                     window.location.href = REDIRECT_URL;
                 }, 3000);
 
@@ -154,26 +151,35 @@
         observer.observe(targetNode, config);
     }
 
-    // 삭제 완료 후 이동했을 때만 첫 번째 항목 자동 체크 및 수집 시작
-    function autoCheckFirstFilter() {
+    // [V5.0 수정] 삭제 완료 후 이동했을 때 첫 번째 항목 체크 및 수집 버튼 클릭 (함수 직접 호출 방식)
+    function autoCheckAndCollect() {
         const url = window.location.href;
         if (url.includes('getGoodsCategory.php') && url.includes('sch_keyword=') && url.includes('is_after_del=Y')) {
-            console.log("🔎 [더망고 V2] 삭제 완료 후 자동 체크 및 수집 시작 시도 중...");
+            console.log("🔎 [더망고 V2] 필터 자동 체크 및 수집 버튼 실행 시도 중...");
             
             setTimeout(() => {
                 const firstCheckbox = document.querySelector('#search_category tbody tr input[name="chk_value"]');
                 if (firstCheckbox) {
                     firstCheckbox.checked = true;
-                    console.log("✅ [더망고 V2] 첫 번째 필터를 자동으로 선택했습니다.");
+                    console.log("✅ [더망고 V2] 필터 자동 선택 완료.");
 
-                    // [V4.9 추가] 수집 시작 버튼 자동 클릭
-                    const startBtn = document.getElementById('start_button');
-                    if (startBtn) {
-                        console.log("🚀 [더망고 V2] 신규상품수집 버튼을 자동으로 클릭합니다.");
-                        startBtn.click();
-                    }
+                    // 페이지의 스크립트 컨텍스트에서 site_check_window()를 실행하도록 주입
+                    const script = document.createElement('script');
+                    script.textContent = `
+                        (function() {
+                            console.log("🚀 [더망고 V2] 페이지 내부 site_check_window() 함수를 직접 실행합니다.");
+                            if (typeof site_check_window === 'function') {
+                                site_check_window();
+                            } else {
+                                const btn = document.getElementById('start_button');
+                                if (btn) btn.click();
+                            }
+                        })();
+                    `;
+                    document.body.appendChild(script);
+                    script.remove();
                 }
-            }, 800); 
+            }, 1200); // 안정성을 위해 지연 시간을 1.2초로 충분히 확보
         }
     }
 })();
