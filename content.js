@@ -182,22 +182,27 @@
         console.log("👀 [더망고 V2] 삭제 상태 감시를 시작했습니다.");
     }
 
-    // [V4.6 추가] 필터 페이지 이동 후 첫 번째 항목 자동 체크
+    // [V4.6 추가] 필터 페이지 이동 후 첫 번째 항목 자동 체크 및 수집 시작
     function autoCheckFirstFilter() {
-        // 필터 관리 페이지이면서 검색어가 있는 경우에만 실행
         if (window.location.href.includes('getGoodsCategory.php') && window.location.href.includes('sch_keyword=')) {
-            console.log("🔎 [더망고 V2] 필터 자동 체크 시도 중...");
+            console.log("🔎 [더망고 V2] 필터 자동 체크 및 수집 시작 시도 중...");
             
-            // 데이터 로딩 시간을 고려하여 약간의 지연 후 실행 (필요 시)
             setTimeout(() => {
                 const firstCheckbox = document.querySelector('#search_category tbody tr input[name="chk_value"]');
                 if (firstCheckbox) {
                     firstCheckbox.checked = true;
                     console.log("✅ [더망고 V2] 첫 번째 필터를 자동으로 선택했습니다.");
+
+                    // [V4.7 추가] 수집 시작 버튼 자동 클릭
+                    const startBtn = document.getElementById('start_button');
+                    if (startBtn) {
+                        console.log("🚀 [더망고 V2] 신규상품수집 버튼을 자동으로 클릭합니다.");
+                        startBtn.click();
+                    }
                 } else {
                     console.log("ℹ️ [더망고 V2] 체크할 필터를 찾지 못했습니다.");
                 }
-            }, 500); 
+            }, 800); // 로딩 안정성을 위해 지연 시간을 0.8초로 약간 늘림
         }
     }
 })();
