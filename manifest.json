@@ -1,17 +1,21 @@
 {
   "manifest_version": 3,
   "name": "The Mango Filter",
-  "version": "1.0.0",
-  "description": "A powerful filtering tool for your browser.",
+  "version": "1.0.1",
+  "description": "더망고 대량등록 프로그램 필터 및 리스트 관리 도구",
   "action": {
-    "default_popup": "index.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_popup": "index.html"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://tmg4084.mycafe24.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://tmg4084.mycafe24.com/mall/admin/admin.php*"],
+      "js": ["content.js"]
+    }
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
