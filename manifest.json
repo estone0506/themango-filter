@@ -1,19 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "The Mango Filter",
-  "version": "1.0.2",
-  "description": "더망고 대량등록 프로그램 필터 및 리스트 관리 도구 (테스트 버전)",
-  "action": {
-    "default_popup": "index.html"
-  },
-  "permissions": ["storage", "activeTab", "scripting"],
+  "name": "더망고 필터 수집 익스텐션",
+  "version": "1.0.0",
+  "description": "더망고 관리자 페이지에서 필터 정보를 수집하는 크롬 익스텐션",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
   "host_permissions": [
     "https://tmg4084.mycafe24.com/*"
   ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": ["https://tmg4084.mycafe24.com/mall/admin/admin.php*"],
-      "js": ["content.js"]
+      "matches": [ "https://tmg4084.mycafe24.com/*" ],
+      "js": [ "content.js" ]
     }
   ]
 }

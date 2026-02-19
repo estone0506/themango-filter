@@ -1,39 +1,92 @@
-// 더망고 관리자 페이지 전용 콘텐츠 스크립트
-console.log("The Mango Filter: Content Script Loaded!");
+// content.js - 더망고 웹페이지 제어 및 데이터 추출
 
-// 현재 활성화된 페이지의 DOM에서 데이터를 직접 추출하는 함수
-function scrapeCurrentPageData() {
-  const items = [];
-  
-  // 사용자가 제공한 HTML 구조 기반 선택자: #search_category 테이블 내의 input.input_
-  // 현재 페이지에 이 요소가 있는지 확인합니다.
-  const filterInputs = document.querySelectorAll('#search_category input.input_');
-  
-  console.log("Found filter inputs:", filterInputs.length);
+console.log("The Mango Filter: Content Script Active!");
 
-  // 최대 10개까지 순차적으로 수집
-  for (let i = 0; i < Math.min(filterInputs.length, 10); i++) {
-    const val = filterInputs[i].value;
-    if (val) {
-      items.push({
-        id: i + 1,
-        name: val
-      });
+// 메시지 리스너: 팝업으로부터의 요청 처리
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "GET_MANGO_DATA") {
+        const data = scrapeFiltersFromDOM();
+        sendResponse({ data: data });
     }
-  }
 
-  return items;
+    if (request.action === "SYNC_MARKETS") {
+        updatePageCheckboxes(request.states);
+        sendResponse({ status: "synced" });
+    }
+
+    if (request.action === "TRIGGER_DELETE") {
+        triggerMarketDelete();
+        sendResponse({ status: "triggered" });
+    }
+    return true;
+});
+
+// 현재 페이지에서 필터 데이터 추출
+function scrapeFiltersFromDOM() {
+    const filters = [];
+    const rows = document.querySelectorAll('#search_category tbody tr');
+    let count = 0;
+
+    rows.forEach(row => {
+        if (count >= 10) return;
+        if (row.querySelector('th') || row.style.display === 'none') return;
+
+        const checkbox = row.querySelector('input[name="chk_value"]');
+        const nameInput = row.querySelector('input.input_[type="text"]');
+        
+        if (checkbox && nameInput) {
+            const [uid, siteId] = checkbox.value.split('|');
+            // 필터 생성일 추출 (날짜 형식이 포함된 span 찾기)
+            const dateSpan = Array.from(row.querySelectorAll('td span')).find(s => s.innerText.match(/\d{4}-\d{2}-\d{2}/));
+
+            filters.push({
+                id: uid,
+                siteId: siteId,
+                name: nameInput.value.trim(),
+                createdDate: dateSpan ? dateSpan.innerText.trim() : ''
+            });
+            count++;
+        }
+    });
+    return filters;
 }
 
-// 팝업으로부터의 메시지 대기
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "GET_MANGO_DATA") {
-    // 현재 페이지에서 즉시 추출
-    const data = scrapeCurrentPageData();
-    sendResponse({ 
-      data: data, 
-      currentUrl: window.location.href 
-    });
-  }
-  return true;
-});
+// 웹페이지의 마켓 체크박스 업데이트
+function updatePageCheckboxes(marketStates) {
+    const checkboxMap = {
+        'coupang': 'chk_coupang_yn',
+        'gmarket': 'chk_gmarket20_yn',
+        '11st': 'chk_11st_yn',
+        'smartstore': 'chk_smartstore_yn',
+        'lotteon': 'chk_lotteon_yn',
+        'auction': 'chk_auction20_yn'
+    };
+
+    for (const [market, isChecked] of Object.entries(marketStates)) {
+        const checkboxId = checkboxMap[market];
+        if (checkboxId) {
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) {
+                checkbox.checked = isChecked;
+                // UI 라벨 색상 변경 (더망고 스타일)
+                const span = document.getElementById(checkboxId.replace('_yn', ''));
+                if (span) {
+                    span.className = isChecked ? 'label label-primary market btn_style1' : 'label label-default market btn_style1';
+                }
+            }
+        }
+    }
+}
+
+// 마켓 삭제 버튼 자동 클릭
+function triggerMarketDelete() {
+    // confirm 창을 자동으로 확인 처리
+    const script = document.createElement('script');
+    script.textContent = `
+        window.confirm = () => true;
+        const deleteBtn = Array.from(document.querySelectorAll('a.defbtn_med.dtype2')).find(a => a.innerText.includes('마켓삭제시작'));
+        if (deleteBtn) deleteBtn.click();
+    `;
+    document.body.appendChild(script);
+    script.remove();
+}
