@@ -1,9 +1,9 @@
-// content.js - 다리 역할 스크립트 (V5.1)
+// content.js - 다리 역할 스크립트 (V5.2)
 
 (function() {
     console.log("🌐 [더망고 V2] content.js 로드됨");
 
-    // 1. inject.js 페이지 내 주입
+    // 1. inject.js 페이지 내 주입 (핵심)
     const injectScript = () => {
         if (document.getElementById('themango-v2-inject')) return;
         const script = document.createElement('script');
@@ -13,48 +13,34 @@
         (document.head || document.documentElement).appendChild(script);
     };
 
+    // 즉시 주입 시도
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            injectScript();
-            startObservingStatus();
-            autoCheckAndCollect(); 
-        });
+        document.addEventListener('DOMContentLoaded', injectScript);
     } else {
         injectScript();
-        startObservingStatus();
-        autoCheckAndCollect();
     }
 
     let currentFilterName = "";
 
-    // 2. 팝업 메시지 수신
+    // 2. 메시지 수신 및 포워딩
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        if (request.action === "GET_FILTERS") {
-            sendResponse({ data: scrapeFilters() });
-        }
         if (request.action === "SYNC_MARKETS") {
             window.postMessage({ type: "SET_MARKET_SYNC", market: request.market, checked: request.checked }, "*");
-            sendResponse({ status: "forwarded" });
         }
-        if (request.action === "GET_PAGE_MARKET_STATUS") {
-            sendResponse({ status: getPageMarketStatus() });
+        if (request.action === "TRIGGER_DELETE") {
+            window.postMessage({ type: "EXECUTE_MARKET_DELETE", mode: request.mode }, "*");
         }
         if (request.action === "CLICK_REAL_DELETE_ALL_BTN") {
             currentFilterName = request.filterName; 
-            clickWebpageDeleteAllBtn();
-            sendResponse({ status: "clicked" });
+            const allButtons = Array.from(document.querySelectorAll('a, button'));
+            const targetBtn = allButtons.find(btn => btn.innerText.includes('마켓삭제시작') && btn.innerText.includes('검색결과모든상품'));
+            if (targetBtn) targetBtn.click();
         }
-        if (request.action === "TRIGGER_DELETE") {
-            injectScript();
-            setTimeout(() => {
-                window.postMessage({ type: "EXECUTE_MARKET_DELETE", mode: request.mode }, "*");
-            }, 100);
-            sendResponse({ status: "forwarded" });
-        }
+        if (request.action === "GET_FILTERS") { sendResponse({ data: scrapeFilters() }); }
+        if (request.action === "GET_PAGE_MARKET_STATUS") { sendResponse({ status: getPageMarketStatus() }); }
         return true;
     });
 
-    // 필터 수집 함수
     function scrapeFilters() {
         const filters = [];
         const rows = document.querySelectorAll('#search_category tbody tr');
@@ -62,15 +48,12 @@
             const checkbox = row.querySelector('input[name="chk_value"]');
             const nameInput = row.querySelector('input.input_[type="text"]');
             if (checkbox && nameInput) {
-                const uid = checkbox.value.split('|')[0];
-                const name = nameInput.value.trim();
-                filters.push({ id: uid, name: name });
+                filters.push({ id: checkbox.value.split('|')[0], name: nameInput.value.trim() });
             }
         });
         return filters.slice(0, 10);
     }
 
-    // 현재 페이지 마켓 상태 가져오기
     function getPageMarketStatus() {
         const checkboxMap = { 'coupang': 'chk_coupang_yn', 'gmarket': 'chk_gmarket20_yn', '11st': 'chk_11st_yn', 'smartstore': 'chk_smartstore_yn', 'lotteon': 'chk_lotteon_yn', 'auction': 'chk_auction20_yn' };
         const status = {};
@@ -81,79 +64,17 @@
         return status;
     }
 
-    // 실제 페이지의 "마켓삭제시작(검색결과모든상품)" 버튼을 찾아 클릭
-    function clickWebpageDeleteAllBtn() {
-        const allButtons = Array.from(document.querySelectorAll('a, button'));
-        const targetBtn = allButtons.find(btn => btn.innerText.includes('마켓삭제시작') && btn.innerText.includes('검색결과모든상품'));
-        if (targetBtn) {
-            targetBtn.click();
-        } else {
-            alert("페이지에서 삭제 버튼을 찾을 수 없습니다.");
-        }
-    }
-
-    function getParamFromUrl(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name) || "";
-    }
-
-    // 페이지 내 삭제 상태 감시 관찰자
-    function startObservingStatus() {
+    // 작업 완료 감시 및 이동 (기존 V4.8 로직 유지)
+    const observer = new MutationObserver(() => {
         const targetNode = document.getElementById('layer_page');
-        if (!targetNode) {
-            setTimeout(startObservingStatus, 2000);
-            return;
+        if (targetNode && targetNode.innerText.includes("마켓삭제가 완료되었습니다")) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filterName = currentFilterName || urlParams.get('ps_subject') || "";
+            setTimeout(() => {
+                window.location.href = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodeURIComponent(filterName)}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
+            }, 3000);
+            observer.disconnect();
         }
-        const config = { childList: true, characterData: true, subtree: true };
-        const callback = function(mutationsList, observer) {
-            const currentText = targetNode.innerText;
-            if (currentText.includes("마켓삭제가 완료되었습니다")) {
-                try { chrome.runtime.sendMessage({ action: "DELETE_COMPLETED" }); } catch(e) {}
-                setTimeout(() => {
-                    const filterName = currentFilterName || getParamFromUrl('ps_subject');
-                    const encodedName = encodeURIComponent(filterName);
-                    const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
-                    window.location.href = REDIRECT_URL;
-                }, 3000);
-                observer.disconnect();
-            }
-        };
-        const observer = new MutationObserver(callback);
-        observer.observe(targetNode, config);
-    }
-
-    // [V5.1 수정] 단일 스크립트 주입 방식으로 완전 자동화
-    function autoCheckAndCollect() {
-        const url = window.location.href;
-        if (url.includes('getGoodsCategory.php') && url.includes('is_after_del=Y')) {
-            console.log("🚀 [더망고 V2] 페이지 내부로 자동화 스크립트 주입 시작");
-            
-            // 모든 동작을 페이지 내부(window)에서 직접 수행하도록 주입
-            const script = document.createElement('script');
-            script.textContent = `
-                (function() {
-                    // 1. 체크박스 체크 (DOM 조작)
-                    const firstCheckbox = document.querySelector('#search_category tbody tr input[name="chk_value"]');
-                    if (firstCheckbox) {
-                        firstCheckbox.checked = true;
-                        console.log("✅ [주입됨] 첫 번째 필터 체크 완료");
-
-                        // 2. 수집 함수 호출 (약간의 딜레이 후 실행하여 체크 반영 보장)
-                        setTimeout(() => {
-                            if (typeof window.site_check_window === 'function') {
-                                console.log("🚀 [주입됨] site_check_window() 함수 실행");
-                                window.site_check_window();
-                            } else {
-                                console.error("❌ [주입됨] site_check_window 함수를 찾을 수 없습니다.");
-                            }
-                        }, 500);
-                    } else {
-                        console.error("❌ [주입됨] 체크박스를 찾을 수 없습니다.");
-                    }
-                })();
-            `;
-            document.body.appendChild(script);
-            script.remove();
-        }
-    }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 })();
