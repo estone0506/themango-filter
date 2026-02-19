@@ -30,13 +30,10 @@
 
     // 2. 삭제 실행 로직
     function executeDelete(mode) {
-        // (1) 브라우저 확인창(confirm, alert) 자동 승인 처리
+        // (1) 브라우저 확인창(confirm)만 자동 승인 처리 (시작 시 번거로움 제거)
+        // 완료 알림(alert)은 사용자가 직접 볼 수 있도록 오버라이드 하지 않음
         window.confirm = function(msg) { 
             console.log("✅ [자동승인] confirm 창 무시:", msg);
-            return true; 
-        };
-        window.alert = function(msg) { 
-            console.log("ℹ️ [알림] alert 창 내용:", msg);
             return true; 
         };
 
