@@ -14,9 +14,13 @@
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectScript);
+        document.addEventListener('DOMContentLoaded', () => {
+            injectScript();
+            startObservingStatus();
+        });
     } else {
         injectScript();
+        startObservingStatus();
     }
 
     // 2. 팝업 메시지 수신
@@ -128,5 +132,29 @@
             console.error("❌ [더망고 V2] 삭제 버튼을 찾을 수 없습니다.");
             alert("페이지에서 삭제 버튼을 찾을 수 없습니다. 페이지를 확인해주세요.");
         }
+    }
+
+    // [V4.1 추가] 페이지 내 삭제 상태 감시 관찰자
+    function startObservingStatus() {
+        const targetNode = document.getElementById('layer_page');
+        if (!targetNode) {
+            // 아직 엘리먼트가 없으면 생성될 때까지 대기 후 다시 시도
+            setTimeout(startObservingStatus, 2000);
+            return;
+        }
+
+        const config = { childList: true, characterData: true, subtree: true };
+        const callback = function(mutationsList, observer) {
+            const currentText = targetNode.innerText;
+            if (currentText.includes("마켓삭제가 완료되었습니다")) {
+                console.log("🎊 [더망고 V2] 삭제 완료 감지!");
+                // 팝업으로 완료 알림 전송 (팝업이 열려있을 때만 수신됨)
+                chrome.runtime.sendMessage({ action: "DELETE_COMPLETED" });
+            }
+        };
+
+        const observer = new MutationObserver(callback);
+        observer.observe(targetNode, config);
+        console.log("👀 [더망고 V2] 삭제 상태 감시를 시작했습니다.");
     }
 })();

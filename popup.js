@@ -149,6 +149,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // [V4.1 추가] 삭제 완료 메시지 수신 (content.js -> popup.js)
+    chrome.runtime.onMessage.addListener((request) => {
+        if (request.action === "DELETE_COMPLETED") {
+            updateStatus('🎊 마켓 삭제가 모두 완료되었습니다!');
+            // 완료 시 팝업 상단에도 눈에 띄게 표시
+            statusDiv.style.backgroundColor = '#4CAF50'; // 초록색으로 변경
+            alert('마켓 삭제가 완료되었습니다.');
+        }
+    });
+
     function updateStatus(msg) {
         statusDiv.textContent = msg;
         statusDiv.style.opacity = '1';
