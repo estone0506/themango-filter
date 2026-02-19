@@ -1,0 +1,15 @@
+# Ignore image files for analysis
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+*.webp
+
+# Ignore log files
+*.log
+
+# Ignore OS metadata
+.DS_Store
+Thumbs.db
