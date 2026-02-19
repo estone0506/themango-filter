@@ -13,33 +13,17 @@ async function fetchFilterData() {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlText, "text/html");
     
-    // 더망고 페이지 구조에 따라 수정이 필요할 수 있는 부분
-    // 예: 필터 이름이 들어있는 input이나 td를 찾습니다. 
-    // 여기서는 일반적인 관리자 페이지의 리스트 구조를 가정합니다.
+    // 분석된 HTML 구조: #search_category 테이블 내의 input.input_ 요소들
     const items = [];
+    const filterInputs = doc.querySelectorAll('#search_category input.input_');
     
-    // 예시: 테이블의 행(tr) 중 데이터가 있는 부분을 선택 (더망고 실제 구조에 맞춰 조정 필요)
-    const rows = doc.querySelectorAll('tr[id^="row_"], .list_tr, table tr');
-    
-    let count = 0;
-    rows.forEach((row) => {
-      if (count >= 10) return;
-      
-      // 행 내에서 텍스트나 입력값을 추출 (필터 이름이 들어있는 위치)
-      // 보통 name="ft_name[]" 같은 input이거나 특정 class의 td일 확률이 높습니다.
-      const nameElement = row.querySelector('input[type="text"], .ft_name, td:nth-child(3)');
-      
-      if (nameElement) {
-        const nameValue = nameElement.value || nameElement.innerText.trim();
-        if (nameValue && nameValue !== "필터명") { // 헤더 제외
-          items.push({
-            id: count + 1,
-            name: nameValue
-          });
-          count++;
-        }
-      }
-    });
+    // 최대 10개까지 순차적으로 수집
+    for (let i = 0; i < Math.min(filterInputs.length, 10); i++) {
+      items.push({
+        id: i + 1,
+        name: filterInputs[i].value // 필터 이름(수정가능)의 실제 값
+      });
+    }
 
     return items;
   } catch (error) {
@@ -54,6 +38,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     fetchFilterData().then(data => {
       sendResponse({ data: data });
     });
-    return true; // 비동기 응답을 위해 true 반환
+    return true; // 비동기 응답 처리
   }
 });

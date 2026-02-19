@@ -22,17 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response && response.data && response.data.length > 0) {
           renderMangoList(response.data);
         } else {
-          alert("데이터를 가져오지 못했습니다. 로그인 상태와 페이지를 확인하세요.");
+          alert("데이터를 가져오지 못했습니다. 로그인 여부나 페이지 주소를 확인하세요.");
         }
       });
     } else {
-      alert("더망고 관리자 페이지 탭을 활성화한 상태에서 눌러주세요!");
+      alert("더망고 관리자 페이지 탭을 활성화한 상태에서 실행해 주세요!");
       collectBtn.disabled = false;
       collectBtn.innerText = "더망고 필터 10개 수집";
     }
   });
 
-  // 수집된 데이터를 체크박스와 수정 가능한 input으로 렌더링
+  // 수집된 데이터를 체크박스와 수정 가능한 input으로 10개 나열
   function renderMangoList(data) {
     filterList.innerHTML = ''; 
     data.forEach(item => {
@@ -41,15 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
       li.innerHTML = `
         <div class="item-left">
           <input type="checkbox" class="item-checkbox" id="chk-${item.id}">
-          <input type="text" class="item-name-input" value="${item.name}" title="수정 가능">
+          <span class="item-index">${item.id}.</span>
+          <input type="text" class="item-name-input" value="${item.name}" title="필터 이름 수정 가능">
         </div>
-        <button class="delete-btn">×</button>
       `;
       filterList.appendChild(li);
     });
   }
 
-  // 기존 초기화 버튼 기능 유지
+  // 초기화 버튼
   document.getElementById('clear-btn').addEventListener('click', () => {
     filterList.innerHTML = '';
   });

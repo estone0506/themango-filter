@@ -121,42 +121,44 @@ button:hover {
 .mango-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  padding: 8px 12px;
+  background: white;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .item-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
 }
 
+.item-index {
+  font-size: 0.8rem;
+  color: #888;
+  min-width: 20px;
+}
+
 .item-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
-  accent-color: var(--primary-color);
 }
 
 .item-name-input {
   flex: 1;
-  padding: 5px 8px;
-  border: 1px solid transparent;
-  background: transparent;
+  padding: 6px 10px;
+  border: 1px solid #eee;
   border-radius: 4px;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.item-name-input:hover {
-  background: #f0f0f0;
-  border-color: #ddd;
+  font-size: 0.85rem;
+  color: #333;
 }
 
 .item-name-input:focus {
-  background: white;
   border-color: var(--primary-color);
+  background: #fff9e6;
   outline: none;
 }
 
