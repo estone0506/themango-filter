@@ -1,21 +1,24 @@
 // popup.js - 더망고 V2 리모컨 (삭제 버튼 제어)
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const collectFiltersBtn = document.getElementById('collectFiltersBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const statusDiv = document.getElementById('status');
 
-    // 1. 선택 삭제 버튼 이벤트
-    deleteSelectedBtn.addEventListener('click', async () => {
-        if (!confirm('선택된 상품의 마켓 삭제를 시작하시겠습니까?')) return;
-        await sendDeleteMessage('selected');
-        updateStatus('✅ 선택 상품 삭제 요청 전송');
+    const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
+
+    // 1. 과거 필터 수집 버튼 이벤트 (URL 이동)
+    collectFiltersBtn.addEventListener('click', async () => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+            chrome.tabs.update(tab.id, { url: TARGET_FILTER_URL });
+            updateStatus('🔄 필터 수집 페이지로 이동 중...');
+        }
     });
 
     // 2. 전체 삭제 버튼 이벤트
     deleteAllBtn.addEventListener('click', async () => {
-        if (!confirm('🚨 경고: 검색 결과의 모든 상품을 마켓에서 삭제하시겠습니까?
-(취소할 수 없습니다.)')) return;
+        if (!confirm('🚨 경고: 검색 결과의 모든 상품을 마켓에서 삭제하시겠습니까?\n(취소할 수 없습니다.)')) return;
         await sendDeleteMessage('all');
         updateStatus('🚨 전체 상품 삭제 요청 전송');
     });

@@ -11,9 +11,35 @@
         <h1>🥭 더망고 마켓 삭제 V2</h1>
 
         <div class="delete-section">
-            <button id="deleteSelectedBtn" class="delete-btn">
-                <span>선택 상품 삭제</span>
+            <button id="collectFiltersBtn" class="delete-btn">
+                <span>과거 필터 수집</span>
             </button>
+            
+            <div class="filter-table-container">
+                <table id="filterTable">
+                    <thead>
+                        <tr>
+                            <th width="40">선택</th>
+                            <th>필터명</th>
+                            <th width="60">ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filterTableBody">
+                        <!-- 10 empty rows for placeholder -->
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
             <button id="deleteAllBtn" class="delete-btn all-delete">
                 <span>모든 검색결과 삭제</span>
             </button>

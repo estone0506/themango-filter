@@ -72,6 +72,42 @@ h1 {
     transform: translateY(-2px);
 }
 
+/* 필터 테이블 스타일 */
+.filter-table-container {
+    margin: 10px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+#filterTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+#filterTable th {
+    background-color: #333;
+    color: #fff;
+    padding: 8px 4px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+}
+
+#filterTable td {
+    border-bottom: 1px solid #333;
+    padding: 6px 4px;
+    height: 28px; /* 빈 행 높이 고정 */
+    text-align: center;
+    color: #ccc;
+}
+
+#filterTable tbody tr:hover {
+    background-color: #2a2a2a;
+}
+
 .status {
     margin-top: 10px;
     padding: 8px;
