@@ -118,15 +118,52 @@ button:hover {
   overflow-y: auto;
 }
 
-.filter-item {
-  background: var(--white);
-  padding: 8px 12px;
-  margin-bottom: 5px;
-  border-radius: 6px;
+.mango-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  gap: 10px;
+  padding: 10px;
+}
+
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.item-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.item-name-input {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.item-name-input:hover {
+  background: #f0f0f0;
+  border-color: #ddd;
+}
+
+.item-name-input:focus {
+  background: white;
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.collect-btn {
+  background-color: #4caf50 !important; /* Green for collection */
+  color: white !important;
+  margin-bottom: 15px;
 }
 
 .delete-btn {
