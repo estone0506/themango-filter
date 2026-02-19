@@ -38,6 +38,11 @@
             sendResponse({ status: getPageMarketStatus() });
         }
 
+        if (request.action === "CLICK_REAL_DELETE_ALL_BTN") {
+            clickWebpageDeleteAllBtn();
+            sendResponse({ status: "clicked" });
+        }
+
         if (request.action === "TRIGGER_DELETE") {
             injectScript();
             setTimeout(() => {
@@ -107,5 +112,21 @@
             status[key] = el ? el.checked : false;
         }
         return status;
+    }
+
+    // 실제 페이지의 "마켓삭제시작(검색결과모든상품)" 버튼을 찾아 클릭
+    function clickWebpageDeleteAllBtn() {
+        const allButtons = Array.from(document.querySelectorAll('a, button'));
+        const targetBtn = allButtons.find(btn => 
+            btn.innerText.includes('마켓삭제시작') && btn.innerText.includes('검색결과모든상품')
+        );
+
+        if (targetBtn) {
+            targetBtn.click();
+            console.log("✅ [더망고 V2] 페이지 내 전체 삭제 버튼을 클릭했습니다.");
+        } else {
+            console.error("❌ [더망고 V2] 삭제 버튼을 찾을 수 없습니다.");
+            alert("페이지에서 삭제 버튼을 찾을 수 없습니다. 페이지를 확인해주세요.");
+        }
     }
 })();
