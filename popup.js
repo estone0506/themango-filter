@@ -5,17 +5,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const statusDiv = document.getElementById('status');
     const filterTableBody = document.getElementById('filterTableBody');
+    const marketSection = document.getElementById('marketSection');
+    const startDeleteBtn = document.getElementById('startDeleteBtn');
 
     const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
     let lastDataJson = ""; 
 
-    // 1. 팝업 시작 시 저장된 데이터 불러오기
+    // 1. 팝업 시작 시 저장된 데이터 불러오기 및 페이지 확인
     loadSavedData();
+    checkCurrentPage();
 
     // 2. 1초마다 실시간 수집 실행 (필터 페이지일 때만 업데이트)
-    const pollInterval = setInterval(fetchRealtimeData, 1000);
-    fetchRealtimeData();
+    const pollInterval = setInterval(() => {
+        fetchRealtimeData();
+        checkCurrentPage();
+    }, 1000);
+
+    async function checkCurrentPage() {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab && tab.url.includes('admin_goods_update_delete.php')) {
+            marketSection.style.display = 'block';
+        } else {
+            marketSection.style.display = 'none';
+        }
+    }
+
+    // 마켓 체크박스 연동 (1대1 실시간)
+    document.querySelectorAll('.market-chk').forEach(chk => {
+        chk.addEventListener('change', async () => {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab) {
+                chrome.tabs.sendMessage(tab.id, {
+                    action: "SYNC_MARKETS",
+                    market: chk.value,
+                    checked: chk.checked
+                });
+            }
+        });
+    });
+
+    // 마켓 삭제 시작 버튼
+    startDeleteBtn.addEventListener('click', async () => {
+        if (!confirm('현재 설정된 마켓의 상품 삭제를 시작하시겠습니까?')) return;
+        await sendDeleteMessage('selected');
+        updateStatus('🚀 마켓 삭제 프로세스 시작');
+    });
 
     async function loadSavedData() {
         chrome.storage.local.get(['savedFilters'], (result) => {

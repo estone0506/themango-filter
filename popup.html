@@ -45,6 +45,23 @@
             </button>
         </div>
 
+        <div id="marketSection" class="market-section" style="display: none;">
+            <div class="market-header">
+                <span>삭제할 마켓 선택</span>
+            </div>
+            <div class="market-grid">
+                <label><input type="checkbox" class="market-chk" value="coupang"> #쿠팡</label>
+                <label><input type="checkbox" class="market-chk" value="gmarket"> #G마켓2.0</label>
+                <label><input type="checkbox" class="market-chk" value="11st"> #11번가</label>
+                <label><input type="checkbox" class="market-chk" value="smartstore"> #스마트스토어</label>
+                <label><input type="checkbox" class="market-chk" value="lotteon"> #롯데ON</label>
+                <label><input type="checkbox" class="market-chk" value="auction"> #옥션2.0</label>
+            </div>
+            <button id="startDeleteBtn" class="delete-btn real-delete">
+                <span>마켓 삭제 시작</span>
+            </button>
+        </div>
+
         <div id="status" class="status"></div>
     </div>
     <script src="popup.js"></script>

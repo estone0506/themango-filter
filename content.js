@@ -33,6 +33,11 @@
             sendResponse({ data: filters });
         }
 
+        if (request.action === "SYNC_MARKETS") {
+            syncMarketOnPage(request.market, request.checked);
+            sendResponse({ status: "synced" });
+        }
+
         if (request.action === "TRIGGER_DELETE") {
             // 주입이 안 된 경우 다시 시도
             injectScript();
@@ -69,5 +74,31 @@
         });
         
         return filters.slice(0, 10); // 상위 10개만 반환
+    }
+
+    function syncMarketOnPage(market, checked) {
+        const checkboxMap = {
+            'coupang': 'chk_coupang_yn',
+            'gmarket': 'chk_gmarket20_yn',
+            '11st': 'chk_11st_yn',
+            'smartstore': 'chk_smartstore_yn',
+            'lotteon': 'chk_lotteon_yn',
+            'auction': 'chk_auction20_yn'
+        };
+
+        const checkboxId = checkboxMap[market];
+        if (checkboxId) {
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) {
+                // 더망고 내부 함수 select_tab을 활용하거나 직접 조작
+                checkbox.checked = checked;
+                
+                const spanId = checkboxId.replace('_yn', '');
+                const span = document.getElementById(spanId);
+                if (span) {
+                    span.className = checked ? 'label label-primary market btn_style1' : 'label label-default market btn_style1';
+                }
+            }
+        }
     }
 })();

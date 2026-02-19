@@ -72,6 +72,57 @@ h1 {
     transform: translateY(-2px);
 }
 
+/* 마켓 선택 섹션 */
+.market-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #444;
+}
+
+.market-header {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #bbb;
+}
+
+.market-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.market-grid label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    background: #2a2a2a;
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.market-grid label:hover {
+    background: #333;
+}
+
+.market-chk {
+    accent-color: #2196F3;
+}
+
+/* 마켓 삭제 시작 버튼 (3.JPG 스타일) */
+#startDeleteBtn {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+}
+
+#startDeleteBtn:hover {
+    background: linear-gradient(135deg, #ff5252 0%, #f44336 100%);
+    transform: translateY(-2px);
+}
+
 /* 필터 테이블 스타일 */
 .filter-table-container {
     margin: 10px 0;
