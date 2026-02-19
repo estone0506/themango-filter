@@ -153,9 +153,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     chrome.runtime.onMessage.addListener((request) => {
         if (request.action === "DELETE_COMPLETED") {
             updateStatus('🎊 마켓 삭제가 모두 완료되었습니다!');
-            // 완료 시 팝업 상단에도 눈에 띄게 표시
-            statusDiv.style.backgroundColor = '#4CAF50'; // 초록색으로 변경
-            alert('마켓 삭제가 완료되었습니다.');
+            statusDiv.style.backgroundColor = '#4CAF50'; 
+            
+            // 체크된 필터 정보 가져오기 (이동 시 검색어로 사용)
+            const selectedCheckbox = document.querySelector('#filterTableBody input[type="checkbox"]:checked');
+            let filterName = "";
+            if (selectedCheckbox) {
+                filterName = selectedCheckbox.getAttribute('data-name');
+            }
+
+            // 3초 후 자동 이동 로직
+            setTimeout(async () => {
+                const encodedName = encodeURIComponent(filterName);
+                const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc`;
+                
+                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                if (tab) {
+                    chrome.tabs.update(tab.id, { url: REDIRECT_URL });
+                    console.log(`🚚 [V4.2] ${filterName} 필터 페이지로 자동 이동합니다.`);
+                }
+            }, 3000);
+
+            alert('마켓 삭제가 완료되었습니다. 3초 후 필터 관리 페이지로 이동합니다.');
         }
     });
 
