@@ -137,11 +137,16 @@
         }
     }
 
+    // [V4.5 추가] URL에서 파라미터 추출하는 함수
+    function getParamFromUrl(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name) || "";
+    }
+
     // [V4.1 추가] 페이지 내 삭제 상태 감시 관찰자
     function startObservingStatus() {
         const targetNode = document.getElementById('layer_page');
         if (!targetNode) {
-            // 아직 엘리먼트가 없으면 생성될 때까지 대기 후 다시 시도
             setTimeout(startObservingStatus, 2000);
             return;
         }
@@ -152,18 +157,21 @@
             if (currentText.includes("마켓삭제가 완료되었습니다")) {
                 console.log("🎊 [더망고 V2] 삭제 완료 감지! 3초 후 이동합니다.");
                 
-                // 팝업이 열려있다면 알림 (선택 사항)
                 try { chrome.runtime.sendMessage({ action: "DELETE_COMPLETED" }); } catch(e) {}
 
                 // 3초 후 자동 페이지 이동
                 setTimeout(() => {
-                    const encodedName = encodeURIComponent(currentFilterName);
+                    // 1순위: 팝업에서 전달받은 이름, 2순위: 현재 페이지 URL의 ps_subject 값
+                    const filterName = currentFilterName || getParamFromUrl('ps_subject');
+                    const encodedName = encodeURIComponent(filterName);
+                    
                     const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc`;
                     
+                    console.log(`🚚 [V4.5] ${filterName} 관리 페이지로 이동합니다.`);
                     window.location.href = REDIRECT_URL;
                 }, 3000);
 
-                observer.disconnect(); // 한 번 이동하면 감시 중단
+                observer.disconnect();
             }
         };
 
