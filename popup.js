@@ -1,8 +1,6 @@
-// popup.js - 더망고 필터 수집 익스텐션 (URL 이동 후 수집 버전)
+// popup.js - 더망고 필터 수집 익스텐션 (자동 이동 및 자동 수집 버전)
 
 let filters = [];
-
-// 사용자가 지정한 필터 10개 정렬 URL
 const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,42 +36,62 @@ async function handleCollectClick() {
 
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-        // 1. 더망고 도메인 확인
         if (!tab.url.includes('tmg4084.mycafe24.com')) {
-            throw new Error('더망고 관리자 페이지에서 실행해주세요.');
+            throw new Error('더망고 페이지에서 실행해주세요.');
         }
 
-        // 2. 타겟 URL인지 확인 (파라미터 ft_num=10 포함 여부 등으로 체크)
+        // URL이 다르면 이동 후 자동 수집 프로세스 시작
         if (!tab.url.includes('ft_num=10') || !tab.url.includes('pmode=filter_delete')) {
-            // URL이 다르면 이동 시킴
-            if (confirm("필터 10개 수집 페이지로 이동할까요?")) {
-                await chrome.tabs.update(tab.id, { url: TARGET_FILTER_URL });
-                statusDiv.textContent = '페이지 이동 중... 이동 후 다시 버튼을 눌러주세요.';
-                return;
-            } else {
-                throw new Error('수집을 위해 해당 페이지로 이동이 필요합니다.');
-            }
+            statusDiv.textContent = '🔄 수집 페이지로 이동 중... (자동 수집)';
+            
+            // 탭 업데이트
+            await chrome.tabs.update(tab.id, { url: TARGET_FILTER_URL });
+
+            // 페이지 로딩 완료 감지 리스너
+            const listener = (tabId, changeInfo) => {
+                if (tabId === tab.id && changeInfo.status === 'complete') {
+                    chrome.tabs.onUpdated.removeListener(listener);
+                    statusDiv.textContent = '🔄 로딩 완료! 데이터 추출 중...';
+                    
+                    // 컨텐츠 스크립트가 로드될 시간을 잠시 준 뒤 수집 실행
+                    setTimeout(() => collectFilters(), 1500);
+                }
+            };
+            chrome.tabs.onUpdated.addListener(listener);
+            return;
         }
 
-        // 3. 현재 페이지(DOM)에서 데이터 수집 시작
-        statusDiv.textContent = '🔄 현재 화면에서 필터 추출 중...';
-        chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA_FROM_DOM" }, (response) => {
-            collectBtn.disabled = false;
-            if (response && response.data && response.data.length > 0) {
-                filters = response.data;
-                statusDiv.textContent = `✅ ${filters.length}개의 필터를 수집했습니다.`;
-                statusDiv.className = 'status success';
-                displayFilters();
-                saveFilters();
-            } else {
-                statusDiv.textContent = '❌ 리스트를 찾을 수 없습니다. (로그인 및 화면 확인)';
-                statusDiv.className = 'status error';
-            }
-        });
+        // 이미 해당 페이지라면 즉시 수집
+        await collectFilters();
 
     } catch (error) {
         statusDiv.textContent = `❌ ${error.message}`;
         statusDiv.className = 'status error';
+        collectBtn.disabled = false;
+    }
+}
+
+async function collectFilters() {
+    const statusDiv = document.getElementById('status');
+    const collectBtn = document.getElementById('collectBtn');
+
+    try {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const response = await chrome.tabs.sendMessage(tab.id, { action: "GET_MANGO_DATA_FROM_DOM" });
+
+        if (response && response.data && response.data.length > 0) {
+            filters = response.data;
+            statusDiv.textContent = `✅ ${filters.length}개의 필터를 수집했습니다.`;
+            statusDiv.className = 'status success';
+            displayFilters();
+            saveFilters();
+        } else {
+            throw new Error('데이터를 추출하지 못했습니다. 화면을 확인하세요.');
+        }
+    } catch (error) {
+        statusDiv.textContent = `❌ ${error.message}`;
+        statusDiv.className = 'status error';
+    } finally {
         collectBtn.disabled = false;
     }
 }
