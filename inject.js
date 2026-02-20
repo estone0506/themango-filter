@@ -55,19 +55,29 @@
     // --- 유틸리티 함수들 ---
     function autoCheckMasterMarket() {
         if (window.location.href.includes('admin_goods_update.php')) {
-            console.log("📦 [더망고 V2] 마켓 전체 선택 시도 중...");
+            console.log("📦 [더망고 V2] 마켓 전체 선택 및 자동 시작 시도 중...");
             let retry = 0;
             const timer = setInterval(() => {
                 const masterChk = document.getElementById('all_checkbox_market');
-                if (masterChk) {
+                const startBtn = document.getElementById('update_start');
+
+                if (masterChk && startBtn) {
                     clearInterval(timer);
+                    
+                    // 1. 마스터 체크박스 체크 (UI/데이터 동기화)
                     if (!masterChk.checked) {
                         masterChk.click();
                         console.log("✅ [성공] 마켓 전체 선택 체크박스 자동 활성화 완료");
                     }
+                    
+                    // 2. 0.5초 후 전송 시작 버튼 자동 클릭
+                    setTimeout(() => {
+                        console.log("🚀 [실행] 상품업데이트 & 마켓전송 자동 시작");
+                        startBtn.click();
+                    }, 500);
                 } else {
                     retry++;
-                    if (retry > 30) clearInterval(timer); // 3초 후 포기
+                    if (retry > 50) clearInterval(timer); // 5초 후 포기
                 }
             }, 100);
         }
