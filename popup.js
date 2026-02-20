@@ -1,7 +1,8 @@
 // popup.js - 더망고 V2 리모컨 (삭제 버튼 제어)
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const collectFiltersBtn = document.getElementById('collectFiltersBtn');
+    const collectByUpdateBtn = document.getElementById('collectByUpdateBtn');
+    const collectByRegBtn = document.getElementById('collectByRegBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const clearListBtn = document.getElementById('clearListBtn'); // 목록 초기화 버튼
     const statusDiv = document.getElementById('status');
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const startDeleteBtn = document.getElementById('startDeleteBtn');
     const allMarketChk = document.getElementById('allMarketChk');
 
-    const TARGET_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
+    const BASE_FILTER_URL = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=";
 
     let lastDataJson = ""; 
 
@@ -141,7 +142,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newFilters = result.savedFilters.filter(f => f.id !== id);
                 chrome.storage.local.set({ savedFilters: newFilters }, () => {
                     renderFilterTable(newFilters);
-                    // lastDataJson 업데이트? 굳이 필요없음 (fetchRealtimeData에서 처리됨)
                 });
             }
         });
@@ -174,9 +174,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 버튼 이벤트들
-    collectFiltersBtn.addEventListener('click', async () => {
+    collectByUpdateBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) chrome.tabs.update(tab.id, { url: TARGET_FILTER_URL });
+        if (tab) chrome.tabs.update(tab.id, { url: BASE_FILTER_URL + "&ft_sort=update_desc" });
+    });
+
+    collectByRegBtn.addEventListener('click', async () => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) chrome.tabs.update(tab.id, { url: BASE_FILTER_URL + "&ft_sort=register_desc" });
     });
 
     deleteAllBtn.addEventListener('click', async () => {

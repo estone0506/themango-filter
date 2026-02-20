@@ -11,9 +11,14 @@
         <h1>🥭 더망고 마켓 삭제 V2</h1>
 
         <div class="delete-section">
-            <button id="collectFiltersBtn" class="delete-btn">
-                <span>과거 필터 수집</span>
-            </button>
+            <div style="display: flex; gap: 5px;">
+                <button id="collectByUpdateBtn" class="delete-btn" style="flex: 1; background-color: #2196F3; font-size: 11px; padding: 10px 5px;">
+                    <span>과거 필터 수집(수집일)</span>
+                </button>
+                <button id="collectByRegBtn" class="delete-btn" style="flex: 1; background-color: #3F51B5; font-size: 11px; padding: 10px 5px;">
+                    <span>과거 필터 수집(생성일)</span>
+                </button>
+            </div>
             
             <div class="filter-table-container">
                 <table id="filterTable">
