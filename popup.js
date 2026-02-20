@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const collectFiltersBtn = document.getElementById('collectFiltersBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
+    const clearListBtn = document.getElementById('clearListBtn'); // 목록 초기화 버튼
     const statusDiv = document.getElementById('status');
     const filterTableBody = document.getElementById('filterTableBody');
     const marketSection = document.getElementById('marketSection');
@@ -79,14 +80,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (tab && tab.url.includes('getGoodsCategory.php')) {
                 const response = await chrome.tabs.sendMessage(tab.id, { action: "GET_FILTERS" });
-                if (response && response.data) {
-                    const currentDataJson = JSON.stringify(response.data);
-                    if (currentDataJson !== lastDataJson) {
-                        renderFilterTable(response.data);
-                        lastDataJson = currentDataJson;
-                        chrome.storage.local.set({ savedFilters: response.data });
-                        updateStatus('📡 실시간 동기화 완료');
-                    }
+                if (response && response.data && response.data.length > 0) {
+                    
+                    // 기존 데이터 가져오기
+                    chrome.storage.local.get(['savedFilters'], (result) => {
+                        let currentFilters = result.savedFilters || [];
+                        let isChanged = false;
+
+                        // 새 데이터 병합 (ID 기준 중복 제거)
+                        response.data.forEach(newItem => {
+                            if (!currentFilters.some(existing => existing.id === newItem.id)) {
+                                currentFilters.push(newItem);
+                                isChanged = true;
+                            }
+                        });
+
+                        if (isChanged) {
+                            renderFilterTable(currentFilters);
+                            chrome.storage.local.set({ savedFilters: currentFilters });
+                            updateStatus(`📡 ${response.data.length}개 필터 수집됨 (누적)`);
+                        }
+                    });
                 }
             }
         } catch (e) {}
@@ -94,20 +108,55 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderFilterTable(filters) {
         filterTableBody.innerHTML = '';
-        filters.forEach((filter) => {
+        filters.forEach((filter, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><input type="checkbox" data-id="${filter.id}" data-name="${filter.name}"></td>
                 <td style="text-align:left; padding-left:10px;">${filter.name}</td>
                 <td>${filter.id}</td>
+                <td><button class="delete-row-btn" data-id="${filter.id}">✕</button></td>
             `;
             filterTableBody.appendChild(tr);
         });
+
+        // 빈 행 채우기 (최소 10줄 유지)
         for (let i = filters.length; i < 10; i++) {
             const tr = document.createElement('tr');
-            tr.innerHTML = '<td></td><td></td><td></td>';
+            tr.innerHTML = '<td></td><td></td><td></td><td></td>';
             filterTableBody.appendChild(tr);
         }
+
+        // 삭제 버튼 이벤트 연결
+        document.querySelectorAll('.delete-row-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idToDelete = e.target.getAttribute('data-id');
+                removeFilter(idToDelete);
+            });
+        });
+    }
+
+    function removeFilter(id) {
+        chrome.storage.local.get(['savedFilters'], (result) => {
+            if (result.savedFilters) {
+                const newFilters = result.savedFilters.filter(f => f.id !== id);
+                chrome.storage.local.set({ savedFilters: newFilters }, () => {
+                    renderFilterTable(newFilters);
+                    // lastDataJson 업데이트? 굳이 필요없음 (fetchRealtimeData에서 처리됨)
+                });
+            }
+        });
+    }
+
+    // 목록 초기화 버튼
+    if (clearListBtn) {
+        clearListBtn.addEventListener('click', () => {
+            if (confirm('저장된 모든 필터 목록을 삭제하시겠습니까?')) {
+                chrome.storage.local.set({ savedFilters: [] }, () => {
+                    renderFilterTable([]);
+                    updateStatus('🗑️ 필터 목록이 초기화되었습니다.');
+                });
+            }
+        });
     }
 
     // 개별 마켓 체크박스 연동

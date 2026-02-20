@@ -199,6 +199,19 @@ h1 {
     transition: opacity 0.3s ease;
 }
 
+.delete-row-btn {
+    background: none;
+    border: none;
+    color: #f44336;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 5px;
+}
+
+.delete-row-btn:hover {
+    color: #ff7961;
+}
+
 /* 스크롤바 커스터마이징 */
 ::-webkit-scrollbar {
     width: 6px;
