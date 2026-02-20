@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const collectByUpdateBtn = document.getElementById('collectByUpdateBtn');
     const collectByRegBtn = document.getElementById('collectByRegBtn');
     const testBtn = document.getElementById('testBtn');
+    const resetDataBtn = document.getElementById('resetDataBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const clearListBtn = document.getElementById('clearListBtn'); // 목록 초기화 버튼
     const statusDiv = document.getElementById('status');
@@ -213,6 +214,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tab) {
             chrome.tabs.sendMessage(tab.id, { action: "NAVIGATE", url: url });
             updateStatus('🧪 테스트 시작: 수집 완료 후 자동으로 이동합니다.');
+        }
+    });
+
+    resetDataBtn.addEventListener('click', () => {
+        if (confirm('확장 프로그램의 모든 데이터(필터 리스트, 마켓 선택 상태 등)를 초기화하시겠습니까?')) {
+            chrome.storage.local.clear(() => {
+                // UI 초기화
+                renderFilterTable([]);
+                document.querySelectorAll('.market-chk').forEach(chk => chk.checked = false);
+                allMarketChk.checked = false;
+                lastDataJson = "";
+                updateStatus('🧹 모든 데이터가 초기화되었습니다.');
+            });
         }
     });
 
