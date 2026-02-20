@@ -203,9 +203,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    testBtn.addEventListener('click', () => {
-        alert('테스트 버튼이 클릭되었습니다.');
-        console.log('Test button clicked');
+    testBtn.addEventListener('click', async () => {
+        const filterName = "(브)이레네-SSG/푸마운동화(소)";
+        const encodedName = encodeURIComponent(filterName);
+        // 수집 페이지로 이동하며 자동 실행 트리거(is_after_del=Y) 부여
+        const url = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodedName}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
+        
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+            chrome.tabs.sendMessage(tab.id, { action: "NAVIGATE", url: url });
+            updateStatus('🧪 테스트 시작: 수집 완료 후 자동으로 이동합니다.');
+        }
     });
 
     deleteAllBtn.addEventListener('click', async () => {
