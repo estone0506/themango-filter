@@ -54,8 +54,9 @@
 
     // --- 유틸리티 함수들 ---
     function autoCheckMasterMarket() {
-        if (window.location.href.includes('admin_goods_update.php')) {
-            console.log("📦 [더망고 V2] 마켓 전체 선택 및 자동 시작 시도 중...");
+        const url = window.location.href;
+        if (url.includes('admin_goods_update.php') && url.includes('auto_start=Y')) {
+            console.log("📦 [더망고 V2] 자동 시작 플래그(auto_start=Y) 감지 - 프로세스 개시...");
             let retry = 0;
             const timer = setInterval(() => {
                 const masterChk = document.getElementById('all_checkbox_market');

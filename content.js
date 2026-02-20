@@ -120,8 +120,8 @@
             const mm = now.getMonth() + 1;
             const dd = now.getDate();
 
-            // 이동할 목표 URL (필터명 동적 반영)
-            const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/admin_goods_update.php?amode=detail_search&search_d=&pg=1&search_type=&ps_fn=&ps_sort=&ps_category=&s_market=%5B%2211ST%22%2C%22SMART%22%2C%22LTON%22%5D&ps_gmarket_option=&filter_code=&date_type=&ps_chd=&start_yy=${yy}&start_mm=${mm}&start_dd=${dd}&end_yy=${yy}&end_mm=${mm}&end_dd=${dd}&ps_market_id=no_reg&ps_status=stock&search_type=filter_name&ps_subject=${encodeURIComponent(filterName)}&search_order=asc`;
+            // 이동할 목표 URL (필터명 동적 반영 + 자동 시작 플래그 추가)
+            const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/admin_goods_update.php?amode=detail_search&search_d=&pg=1&search_type=&ps_fn=&ps_sort=&ps_category=&s_market=%5B%2211ST%22%2C%22SMART%22%2C%22LTON%22%5D&ps_gmarket_option=&filter_code=&date_type=&ps_chd=&start_yy=${yy}&start_mm=${mm}&start_dd=${dd}&end_yy=${yy}&end_mm=${mm}&end_dd=${dd}&ps_market_id=no_reg&ps_status=stock&search_type=filter_name&ps_subject=${encodeURIComponent(filterName)}&search_order=asc&auto_start=Y`;
 
             setTimeout(() => {
                 window.location.href = REDIRECT_URL;
