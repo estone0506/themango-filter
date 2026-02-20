@@ -138,6 +138,9 @@
             console.log("🏁 [더망고 V2] 모든 프로세스 완료 감지");
             alert(`${filterName} + 마켓 삭제 + 신규 수집 + 마켓 신규 등록 완료`);
             
+            // 알림창 확인 후 탭 닫기 명령 전송
+            chrome.runtime.sendMessage({ action: "CLOSE_TAB" });
+            
             observer.disconnect();
         }
     });

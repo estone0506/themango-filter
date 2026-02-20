@@ -6,6 +6,9 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // 메시지 리스너 (필요시 확장 가능)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'CLOSE_TAB' && sender.tab) {
+        chrome.tabs.remove(sender.tab.id);
+    }
     if (request.action === 'collectFilters') {
         // 필터 수집 로직은 popup.js에서 처리
         sendResponse({ success: true });
