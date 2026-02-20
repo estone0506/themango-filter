@@ -54,8 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isChecked = allMarketChk.checked;
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         
+        const marketStates = {};
         document.querySelectorAll('.market-chk').forEach(chk => {
             chk.checked = isChecked;
+            marketStates[chk.value] = isChecked;
             // 각 마켓별로 페이지에 동기화 명령 전송
             if (tab) {
                 chrome.tabs.sendMessage(tab.id, {
@@ -65,13 +67,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         });
+        // 상태 저장
+        chrome.storage.local.set({ savedMarkets: marketStates });
     });
 
     async function loadSavedData() {
-        chrome.storage.local.get(['savedFilters'], (result) => {
+        chrome.storage.local.get(['savedFilters', 'savedMarkets'], (result) => {
             if (result.savedFilters) {
                 renderFilterTable(result.savedFilters);
                 lastDataJson = JSON.stringify(result.savedFilters);
+            }
+            if (result.savedMarkets) {
+                for (const [market, checked] of Object.entries(result.savedMarkets)) {
+                    const chk = document.querySelector(`.market-chk[value="${market}"]`);
+                    if (chk) chk.checked = checked;
+                }
             }
         });
     }
@@ -155,6 +165,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('.market-chk').forEach(chk => {
         chk.addEventListener('change', async () => {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            
+            // 상태 저장
+            chrome.storage.local.get(['savedMarkets'], (result) => {
+                const marketStates = result.savedMarkets || {};
+                marketStates[chk.value] = chk.checked;
+                chrome.storage.local.set({ savedMarkets: marketStates });
+            });
+
             if (tab) {
                 chrome.tabs.sendMessage(tab.id, {
                     action: "SYNC_MARKETS",

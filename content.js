@@ -19,8 +19,26 @@
     // 즉시 주입
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
         injectScriptFile();
+        applySavedMarketsOnLoad();
     } else {
-        window.addEventListener('load', injectScriptFile);
+        window.addEventListener('load', () => {
+            injectScriptFile();
+            applySavedMarketsOnLoad();
+        });
+    }
+
+    // [추가] 페이지 로드 시 저장된 마켓 정보 자동 적용
+    function applySavedMarketsOnLoad() {
+        if (window.location.href.includes('admin_goods_update.php')) {
+            chrome.storage.local.get(['savedMarkets'], (result) => {
+                if (result.savedMarkets) {
+                    console.log("📦 [더망고 V2] 저장된 마켓 정보 적용 중...");
+                    Object.entries(result.savedMarkets).forEach(([market, checked]) => {
+                        window.postMessage({ type: "SET_MARKET_SYNC", market: market, checked: checked }, "*");
+                    });
+                }
+            });
+        }
     }
 
     let currentFilterName = "";
