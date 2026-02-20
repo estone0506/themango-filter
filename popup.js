@@ -176,12 +176,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 버튼 이벤트들
     collectByUpdateBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) chrome.tabs.update(tab.id, { url: BASE_FILTER_URL + "&ft_sort=update_desc" });
+        if (tab) {
+            const url = BASE_FILTER_URL + "&ft_sort=modify_asc";
+            chrome.tabs.update(tab.id, { url: url });
+            updateStatus('🚚 필터 수집 페이지(수집일 순)로 이동 중...');
+        }
     });
 
     collectByRegBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab) chrome.tabs.update(tab.id, { url: BASE_FILTER_URL + "&ft_sort=register_desc" });
+        if (tab) {
+            const url = BASE_FILTER_URL + "&ft_sort=register_desc";
+            chrome.tabs.update(tab.id, { url: url });
+            updateStatus('🚚 필터 수집 페이지(생성일 순)로 이동 중...');
+        }
     });
 
     deleteAllBtn.addEventListener('click', async () => {
