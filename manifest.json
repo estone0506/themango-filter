@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "The Mango Filter (V5.4)",
-  "version": "5.4.0",
-  "description": "더망고 마켓 상품 삭제 및 필터 관리 전용 확장 프로그램 (V5.4)",
+  "name": "The Mango Filter (V5.4.1)",
+  "version": "5.4.1",
+  "description": "더망고 마켓 상품 삭제 및 필터 관리 전용 확장 프로그램 (V5.4.1)",
   "permissions": [
     "activeTab",
     "scripting",

@@ -1,4 +1,4 @@
-# The Mango Filter (V5.4) - 더망고 마켓 삭제 및 필터 관리 도구 (재건축)
+# The Mango Filter (V5.4.1) - 더망고 마켓 삭제 및 필터 관리 도구 (재건축)
 
 ## 프로젝트 개요
 기존 V1의 복잡성을 제거하고, **페이지 내부 함수(`goods_permanent_delete`)를 직접 호출하는 방식(Script Injection)**으로 재설계한 버전입니다. 삭제 기능의 신뢰성과 안정성을 최우선으로 합니다.
