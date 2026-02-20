@@ -11,20 +11,16 @@
         <h1>🥭 더망고 마켓 삭제 V2</h1>
 
         <div class="delete-section">
-            <div style="display: flex; gap: 5px;">
-                <button id="collectByUpdateBtn" class="delete-btn" style="flex: 1; background-color: #2196F3; font-size: 11px; padding: 10px 5px;">
-                    <span>과거 필터 수집(수집일)</span>
-                </button>
-                <button id="collectByRegBtn" class="delete-btn" style="flex: 1; background-color: #3F51B5; font-size: 11px; padding: 10px 5px;">
-                    <span>과거 필터 수집(생성일)</span>
-                </button>
-            </div>
+            <button id="collectByUpdateBtn" class="delete-btn" style="background-color: #2196F3; padding: 18px; margin-bottom: 6px; font-size: 15px;">
+                <span>과거 필터 수집 (수집일 순)</span>
+            </button>
+            <button id="collectByRegBtn" class="delete-btn" style="background-color: #3F51B5; padding: 18px; margin-bottom: 10px; font-size: 15px;">
+                <span>과거 필터 수집 (생성일 순)</span>
+            </button>
 
-            <div style="display: flex; gap: 5px;">
-                <button id="resetDataBtn" class="delete-btn" style="flex: 1; background-color: #F44336; margin-top: 5px; margin-bottom: 5px;">
-                    <span>초기화</span>
-                </button>
-            </div>
+            <button id="resetDataBtn" class="delete-btn" style="background-color: #F44336; padding: 8px; margin-bottom: 5px; font-size: 12px; opacity: 0.8;">
+                <span>데이터 초기화</span>
+            </button>
             
             <div class="filter-table-container">
                 <table id="filterTable">
