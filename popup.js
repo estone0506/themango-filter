@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const collectByUpdateBtn = document.getElementById('collectByUpdateBtn');
     const collectByRegBtn = document.getElementById('collectByRegBtn');
+    const testBtn = document.getElementById('testBtn');
     const deleteAllBtn = document.getElementById('deleteAllBtn');
     const clearListBtn = document.getElementById('clearListBtn'); // 목록 초기화 버튼
     const statusDiv = document.getElementById('status');
@@ -200,6 +201,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             chrome.tabs.sendMessage(tab.id, { action: "NAVIGATE", url: url });
             updateStatus('🚚 필터 수집 페이지(생성일 순)로 이동 중...');
         }
+    });
+
+    testBtn.addEventListener('click', () => {
+        alert('테스트 버튼이 클릭되었습니다.');
+        console.log('Test button clicked');
     });
 
     deleteAllBtn.addEventListener('click', async () => {
