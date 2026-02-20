@@ -1,7 +1,20 @@
-# The Mango Filter (V5.6.2) - 더망고 마켓 삭제 및 필터 관리 도구 (재건축)
+# The Mango Filter (V5.6.4) - 더망고 마켓 삭제 및 필터 관리 도구 (재건축)
 
 ## 프로젝트 개요
 기존 V1의 복잡성을 제거하고, **페이지 내부 함수(`goods_permanent_delete`)를 직접 호출하는 방식(Script Injection)**으로 재설계한 버전입니다. 삭제 기능의 신뢰성과 안정성을 최우선으로 합니다.
+
+## 주요 기능 및 히스토리
+... (기존 내용 유지)
+
+### **V5.6.4 (2026-02-20)**
+- **필터 수집 조건 강화:** '필터 수집' 버튼을 눌러 이동하거나 작업 완료 후 리다이렉트된 경우(`is_sync=Y` 파라미터 존재 시)에만 필터 리스트를 동기화합니다.
+- **데이터 보존:** 상품 수집 페이지(`admin_goods_update.php`) 등 다른 페이지로 이동해도 팝업 내의 10개 필터 리스트가 유지됩니다.
+
+## 현재 작업 계획 (V5.6.4)
+1. `popup.js`: 수집 버튼 클릭 시 URL에 `is_sync=Y` 파라미터 추가.
+2. `popup.js`: `fetchRealtimeData` 함수에서 `is_sync=Y` 존재 여부 확인 후 동기화 수행.
+3. `content.js`: 마켓 삭제 완료 후 리다이렉트 URL에 `is_sync=Y` 추가.
+4. `popup.js`: 삭제 완료 후 3초 리다이렉트 URL에 `is_sync=Y` 추가.
 
 ## 핵심 구조 (V2.0)
 - **manifest.json**: `web_accessible_resources` 권한 추가 (`inject.js` 주입용).

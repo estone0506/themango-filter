@@ -102,7 +102,7 @@
             console.log(`✅ [마켓삭제 완료] 3초 후 수집 페이지로 이동: ${filterName}`);
             
             setTimeout(() => {
-                window.location.href = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodeURIComponent(filterName)}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
+                window.location.href = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodeURIComponent(filterName)}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y&is_sync=Y`;
             }, 3000);
             observer.disconnect();
         }
