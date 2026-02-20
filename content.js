@@ -129,6 +129,17 @@
             
             observer.disconnect();
         }
+
+        // 3. 마켓 전송(업데이트) 완료 감시 (V5.5.8 추가)
+        if (pageText.includes("상품의 가격 업데이트 및 선택하신 마켓으로 상품 전송이 모두 완료되었습니다")) {
+            const filterInput = document.querySelector('input[name="ps_subject"]');
+            const filterName = filterInput ? filterInput.value : "알 수 없는 필터";
+            
+            console.log("🏁 [더망고 V2] 모든 프로세스 완료 감지");
+            alert(`${filterName} + 마켓 삭제 + 신규 수집 + 마켓 신규 등록 완료`);
+            
+            observer.disconnect();
+        }
     });
     observer.observe(document.body, { childList: true, subtree: true });
 })();
