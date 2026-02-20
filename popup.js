@@ -81,27 +81,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (tab && tab.url.includes('getGoodsCategory.php')) {
                 const response = await chrome.tabs.sendMessage(tab.id, { action: "GET_FILTERS" });
-                if (response && response.data && response.data.length > 0) {
-                    
-                    // 기존 데이터 가져오기
-                    chrome.storage.local.get(['savedFilters'], (result) => {
-                        let currentFilters = result.savedFilters || [];
-                        let isChanged = false;
+                if (response && response.data) {
+                    // 현재 페이지의 10개 데이터를 테이블에 그대로 보여줌 (동기화)
+                    const currentFilters = response.data;
+                    const dataJson = JSON.stringify(currentFilters);
 
-                        // 새 데이터 병합 (ID 기준 중복 제거)
-                        response.data.forEach(newItem => {
-                            if (!currentFilters.some(existing => existing.id === newItem.id)) {
-                                currentFilters.push(newItem);
-                                isChanged = true;
-                            }
-                        });
-
-                        if (isChanged) {
-                            renderFilterTable(currentFilters);
-                            chrome.storage.local.set({ savedFilters: currentFilters });
-                            updateStatus(`📡 ${response.data.length}개 필터 수집됨 (누적)`);
+                    if (lastDataJson !== dataJson) {
+                        lastDataJson = dataJson;
+                        renderFilterTable(currentFilters);
+                        chrome.storage.local.set({ savedFilters: currentFilters });
+                        if (currentFilters.length > 0) {
+                            updateStatus(`📡 페이지 내 ${currentFilters.length}개 필터 동기화됨`);
                         }
-                    });
+                    }
                 }
             }
         } catch (e) {}
@@ -186,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     collectByRegBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab) {
-            const url = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_desc";
+            const url = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_asc";
             chrome.tabs.sendMessage(tab.id, { action: "NAVIGATE", url: url });
             updateStatus('🚚 필터 수집 페이지(생성일 순)로 이동 중...');
         }
