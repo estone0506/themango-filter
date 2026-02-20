@@ -177,8 +177,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     collectByUpdateBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab) {
-            const url = BASE_FILTER_URL + "&ft_sort=modify_asc";
-            chrome.tabs.update(tab.id, { url: url });
+            const url = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=modify_asc";
+            chrome.tabs.sendMessage(tab.id, { action: "NAVIGATE", url: url });
             updateStatus('🚚 필터 수집 페이지(수집일 순)로 이동 중...');
         }
     });
@@ -186,8 +186,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     collectByRegBtn.addEventListener('click', async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab) {
-            const url = BASE_FILTER_URL + "&ft_sort=register_desc";
-            chrome.tabs.update(tab.id, { url: url });
+            const url = "https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=&ft_num=10&ft_show=&ft_sort=register_desc";
+            chrome.tabs.sendMessage(tab.id, { action: "NAVIGATE", url: url });
             updateStatus('🚚 필터 수집 페이지(생성일 순)로 이동 중...');
         }
     });

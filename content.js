@@ -27,6 +27,10 @@
 
     // 2. 팝업 메시지 수신 및 포워딩
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === "NAVIGATE") {
+            window.location.href = request.url;
+            return;
+        }
         if (request.action === "SYNC_MARKETS") {
             window.postMessage({ type: "SET_MARKET_SYNC", market: request.market, checked: request.checked }, "*");
         }
