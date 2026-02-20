@@ -50,8 +50,29 @@
 
     // 페이지 진입 시 실행
     checkAutoRun();
+    autoCheckMasterMarket();
 
     // --- 유틸리티 함수들 ---
+    function autoCheckMasterMarket() {
+        if (window.location.href.includes('admin_goods_update.php')) {
+            console.log("📦 [더망고 V2] 마켓 전체 선택 시도 중...");
+            let retry = 0;
+            const timer = setInterval(() => {
+                const masterChk = document.getElementById('all_checkbox_market');
+                if (masterChk) {
+                    clearInterval(timer);
+                    if (!masterChk.checked) {
+                        masterChk.click();
+                        console.log("✅ [성공] 마켓 전체 선택 체크박스 자동 활성화 완료");
+                    }
+                } else {
+                    retry++;
+                    if (retry > 30) clearInterval(timer); // 3초 후 포기
+                }
+            }, 100);
+        }
+    }
+
     function tryExecuteWithRetry(mode, retryCount) {
         if (typeof window.goods_permanent_delete === 'function') {
             if (mode === 'all') window.goods_permanent_delete('all', '', '', '');
