@@ -68,15 +68,43 @@
         return status;
     }
 
-    // 작업 완료 감시 (V4.8 로직)
+    // 작업 완료 감시 (V5.4 업데이트)
     const observer = new MutationObserver(() => {
-        const targetNode = document.getElementById('layer_page');
-        if (targetNode && targetNode.innerText.includes("마켓삭제가 완료되었습니다")) {
+        const targetNode = document.getElementById('layer_page') || document.body;
+        const pageText = targetNode.innerText || "";
+
+        // 1. 마켓삭제 완료 감시 (기존 로직)
+        if (pageText.includes("마켓삭제가 완료되었습니다")) {
             const urlParams = new URLSearchParams(window.location.search);
             const filterName = currentFilterName || urlParams.get('ps_subject') || "";
+            console.log(`✅ [마켓삭제 완료] 3초 후 수집 페이지로 이동: ${filterName}`);
+            
             setTimeout(() => {
                 window.location.href = `https://tmg4084.mycafe24.com/mall/admin/shop/getGoodsCategory.php?pmode=filter_delete&uids=&pg=1&site_id=&sch_keyword=${encodeURIComponent(filterName)}&ft_num=10&ft_show=&ft_sort=register_asc&is_after_del=Y`;
             }, 3000);
+            observer.disconnect();
+        }
+
+        // 2. 신규상품수집 완료 감시 (신규 추가)
+        if (pageText.includes("신규상품수집이 모두 완료되었습니다")) {
+            console.log("🎊 [신규상품수집 완료] 감지됨! 3초 후 상품 관리 페이지로 이동합니다.");
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const filterName = currentFilterName || urlParams.get('sch_keyword') || "";
+            
+            // 날짜 정보 (오늘 날짜 기준)
+            const now = new Date();
+            const yy = now.getFullYear();
+            const mm = now.getMonth() + 1;
+            const dd = now.getDate();
+
+            // 이동할 목표 URL (필터명 동적 반영)
+            const REDIRECT_URL = `https://tmg4084.mycafe24.com/mall/admin/admin_goods_update.php?amode=detail_search&search_d=&pg=1&search_type=&ps_fn=&ps_sort=&ps_category=&s_market=%5B%2211ST%22%2C%22SMART%22%2C%22LTON%22%5D&ps_gmarket_option=&filter_code=&date_type=&ps_chd=&start_yy=${yy}&start_mm=${mm}&start_dd=${dd}&end_yy=${yy}&end_mm=${mm}&end_dd=${dd}&ps_market_id=no_reg&ps_status=stock&search_type=filter_name&ps_subject=${encodeURIComponent(filterName)}&search_order=asc`;
+
+            setTimeout(() => {
+                window.location.href = REDIRECT_URL;
+            }, 3000);
+            
             observer.disconnect();
         }
     });
